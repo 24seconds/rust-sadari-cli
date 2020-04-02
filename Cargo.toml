@@ -8,3 +8,6 @@ edition = "2018"
 
 [dependencies]
 termion = "1.5.5"
+argh="0.1"
+tui="0.8.0"
+
