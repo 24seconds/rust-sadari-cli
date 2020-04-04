@@ -1,7 +1,7 @@
+mod calc;
 mod event;
 #[allow(dead_code)]
 mod tools;
-mod calc;
 
 pub use tools::{
     // read_args,
@@ -9,5 +9,5 @@ pub use tools::{
     Cli,
 };
 
-pub use event::*;
 pub use calc::*;
+pub use event::*;
