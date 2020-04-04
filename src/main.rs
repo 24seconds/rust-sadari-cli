@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
-    let stdout = MouseTerminal::from(stdout);
+    // let stdout = MouseTerminal::from(stdout);
     let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
@@ -60,12 +60,40 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .horizontal_margin(10)
                 .split(chunks[1]);
             
-            let mut block = Block::default().borders(Borders::ALL).style(Style::default().fg(Color::Green));
+            let mut block = Block::default().borders(Borders::ALL).style(Style::default().bg(Color::Green));
             f.render(&mut block, main_chunks[0]);
             let mut block = Block::default().borders(Borders::ALL).style(Style::default().bg(Color::Yellow));
             f.render(&mut block, main_chunks[1]);
             let mut block = Block::default().borders(Borders::ALL).style(Style::default().bg(Color::White));
             f.render(&mut block, main_chunks[2]);
+
+            let name_chunk = main_chunks[0];
+            let vec = helper::calc_names_layout(number_of_blocks, 20, 10);
+
+            let name_chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    vec.iter().map(|x| Constraint::Percentage(*x)).collect::<Vec<Constraint>>(),
+                )
+                .split(name_chunk);
+
+            let mut block = Block::default().borders(Borders::ALL).border_style(Style::default().fg(Color::Green));
+            for i in 0..number_of_blocks {
+                f.render(&mut block, name_chunks[i as usize * 2 + 1]);
+            }
+
+            let result_chunk = main_chunks[2];
+            let result_chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    vec.iter().map(|x| Constraint::Percentage(*x)).collect::<Vec<Constraint>>(),
+                )
+                .split(result_chunk);
+
+            let mut block = Block::default().borders(Borders::ALL).border_style(Style::default().fg(Color::Blue));
+            for i in 0..number_of_blocks {
+                f.render(&mut block, result_chunks[i as usize * 2 + 1]);
+            }
         })?;
 
         match events.next()? {
