@@ -2,20 +2,20 @@ use tui::{
   layout::{Rect}
 };
 
-pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u8> {
-  let mut vec = Vec::new();
+pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
+  let mut vec: Vec<u16> = Vec::new();
 
-  let width = n * block_width + (n-1) * space_width;
-  let left_margin = (100 - width) / 2;
-  let right_margin = 100 - width - left_margin;
+  let width: u16 = (n * block_width + (n-1) * space_width).into();
+  let left_margin: u16 = ((100 - width) / 2).into();
+  let right_margin: u16 = (100 - width - left_margin).into();
 
   vec.push(left_margin);
 
   for i in 0..n {
-    vec.push(block_width);
+    vec.push(block_width.into());
 
     if i != n -1 {
-      vec.push(space_width);
+      vec.push(space_width.into());
     }
   }
   vec.push(right_margin);
