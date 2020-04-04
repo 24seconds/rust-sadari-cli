@@ -114,6 +114,28 @@ fn main() -> Result<(), Box<dyn Error>> {
             for i in 0..number_of_blocks {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
             }
+
+            let bridge_chunks: Vec<Rect> = name_chunks
+                .iter()
+                .zip(result_chunks.iter())
+                .map(|z| {
+                    let n = z.0;
+                    let r = z.1;
+                    Rect::new(
+                        n.x + n.width / 2,
+                        n.y + n.height,
+                        n.width / 2,
+                        r.y - (n.y + n.height),
+                    )
+                })
+                .collect();
+            let mut line = Block::default()
+                .borders(Borders::LEFT)
+                .border_style(Style::default().fg(Color::LightBlue));
+
+            for i in 0..number_of_blocks {
+                f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
+            }
         })?;
 
         match events.next()? {
