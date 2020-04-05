@@ -1,7 +1,8 @@
 use argh;
 mod helper;
 use helper::{read_file, Cli, Event, Events};
-use std::{error::Error, io, thread, time};
+use rand::Rng;
+use std::{collections::HashMap, error::Error, io, thread, time};
 use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{
     backend::TermionBackend,
@@ -33,7 +34,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.hide_cursor()?;
 
     let events = Events::new();
-    let number_of_blocks = 3;
+    let number_of_blocks: u8 = 3;
+    let number_of_max_bridge = 6;
+
+    let mut bridge_hashmap: HashMap<u16, Vec<u16>> = HashMap::new();
+    let mut rng = rand::thread_rng();
+    for i in 0..(number_of_blocks - 1) {
+        let random_bridge = rng.gen_range(2, number_of_max_bridge);
+        let vec = helper::calc_bridge_layout(random_bridge);
+        bridge_hashmap.insert(i.into(), vec);
+    }
 
     loop {
         terminal.draw(|mut f| {
@@ -115,6 +125,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
             }
 
+            // render bridge vertical
             let bridge_chunks: Vec<Rect> = name_chunks
                 .iter()
                 .zip(result_chunks.iter())
@@ -135,6 +146,39 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             for i in 0..number_of_blocks {
                 f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
+            }
+
+            // render horizontal
+            for i in 0..(number_of_blocks - 1) {
+                let chunk_i = i as usize * 2 + 1;
+                let bridge_chunk = Rect::new(
+                    bridge_chunks[chunk_i].x + 1,
+                    bridge_chunks[chunk_i].y,
+                    bridge_chunks[chunk_i + 2].x - bridge_chunks[chunk_i].x - 1,
+                    bridge_chunks[chunk_i].height,
+                );
+                let vec: &Vec<u16> = bridge_hashmap.get(&(i as u16)).unwrap();
+                let ratio_length = vec.iter().fold(0, |acc, x| acc + x);
+
+                let bridge_chunks = Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints(
+                        vec.iter()
+                            .map(|x| Constraint::Ratio((*x).into(), ratio_length.into()))
+                            .collect::<Vec<Constraint>>(),
+                    )
+                    .split(bridge_chunk);
+
+                let mut bridge_horizontal = Block::default()
+                    .borders(Borders::BOTTOM)
+                    .border_style(Style::default().fg(Color::Yellow));
+
+                for i in 0..vec.len() {
+                    f.render(
+                        &mut bridge_horizontal,
+                        Block::default().inner(bridge_chunks[i as usize]),
+                    );
+                }
             }
         })?;
 
