@@ -1,3 +1,4 @@
+use rand::Rng;
 use tui::layout::Rect;
 
 pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
@@ -17,6 +18,18 @@ pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
         }
     }
     vec.push(right_margin);
+
+    vec
+}
+
+pub fn calc_bridge_layout(n: u8) -> Vec<u16> {
+    let mut vec = vec![];
+    let mut rng = rand::thread_rng();
+
+    for _ in 0..n {
+        let random_number = rng.gen_range(1, 5);
+        vec.push(random_number);
+    }
 
     vec
 }
