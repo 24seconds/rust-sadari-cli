@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::{rngs::ThreadRng, Rng};
 
 pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
     let width: u16 = (n * block_width + (n - 1) * space_width).into();
@@ -18,14 +18,15 @@ pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
     vec
 }
 
-pub fn calc_bridge_layout(n: u8) -> Vec<u16> {
-    let mut vec = vec![];
-    let mut rng = rand::thread_rng();
-
-    for _ in 0..n {
-        let random_number = rng.gen_range(1, 5);
-        vec.push(random_number);
-    }
+pub fn calc_bridge_indexes(
+    rng: &mut ThreadRng,
+    number_of_bridge: u8,
+    y_coordinate: u16,
+) -> Vec<u16> {
+    let vec: Vec<u16> = (0..number_of_bridge)
+        .into_iter()
+        .map(|_| rng.gen_range(0, y_coordinate))
+        .collect();
 
     vec
 }

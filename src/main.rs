@@ -36,12 +36,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let events = Events::new();
     let number_of_blocks: u8 = 3;
     let number_of_max_bridge = 6;
+    let y_coordinate = 10;
 
     let mut bridge_hashmap: HashMap<u16, Vec<u16>> = HashMap::new();
     let mut rng = rand::thread_rng();
     for i in 0..(number_of_blocks - 1) {
-        let random_bridge = rng.gen_range(2, number_of_max_bridge);
-        let vec = helper::calc_bridge_layout(random_bridge);
+        let number_of_bridge = rng.gen_range(2, number_of_max_bridge);
+        let vec = helper::calc_bridge_indexes(&mut rng, number_of_bridge, y_coordinate);
         bridge_hashmap.insert(i.into(), vec);
     }
 
@@ -180,6 +181,83 @@ fn main() -> Result<(), Box<dyn Error>> {
                     );
                 }
             }
+
+            // let bridge_chunk = Rect::new(bridge_chunks[1].x + 1, bridge_chunks[1].y, bridge_chunks[3].x - bridge_chunks[1].x - 1, bridge_chunks[1].height);
+            // // let bridge_chunk = Rect::new( x: u16, y: u16, width: u16, height: u16);
+            // // let random_bridge = rng.gen_range(1, number_of_max_bridge);
+            // // let vec = helper::calc_bridge_layout(random_bridge);
+            // let vec: &Vec<u16> = bridge_hashmap.get(&0).unwrap();
+            // let ratio_length = vec.iter().fold(0, |acc, x| acc + x);
+            // let bridge_chunks = Layout::default()
+            //     .direction(Direction::Vertical)
+            //     .constraints(
+            //         vec.iter()
+            //             .map(|x| Constraint::Ratio((*x).into(), ratio_length.into()))
+            //             .collect::<Vec<Constraint>>(),
+
+            //     )
+            //     .split(bridge_chunk);
+            // let mut bridge_horizontal = Block::default()
+            //     .borders(Borders::BOTTOM)
+            //     .border_style(Style::default().fg(Color::Yellow));
+
+            // for i in 0..4 {
+            //     f.render(&mut bridge_horizontal, Block::default().inner(bridge_chunks[i as usize]));
+            // }
+
+            // let another_chunks = Layout::default()
+            //     .direction(Direction::Horizontal)
+            //     .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+            //     .split(chunks[0]);
+
+            // let mut block = Block::default()
+            //     .borders(Borders::LEFT | Borders::BOTTOM)
+            //     // .title("Main block with white border")
+            //     .border_style(
+            //         Style::default().fg(Color::Green)
+            //         .modifier(Modifier::DIM)
+            //     );
+            // f.render(&mut block, another_chunks[1]);
+            // let size = f.size();
+
+            // if flag == false {
+            //     println!(
+            //         "size is {}, {}, {}, {}",
+            //         size.left(),
+            //         size.right(),
+            //         size.top(),
+            //         size.bottom()
+            //     );
+            //     flag = true;
+            // }
+
+            // // const BOLD              = 0b0000_0000_0001;
+            // // const DIM               = 0b0000_0000_0010;
+            // // const ITALIC            = 0b0000_0000_0100;
+            // // const UNDERLINED        = 0b0000_0000_1000;
+            // // const SLOW_BLINK        = 0b0000_0001_0000;
+            // // const RAPID_BLINK       = 0b0000_0010_0000;
+            // // const REVERSED          = 0b0000_0100_0000;
+            // // const HIDDEN            = 0b0000_1000_0000;
+            // // const CROSSED_OUT       = 0b0001_0000_0000;
+
+            // let mut block = Block::default()
+            //     .borders(Borders::ALL)
+            //     .title("Main block with white border")
+            //     .border_style(Style::default().fg(Color::Green));
+            // f.render(&mut block, chunks[1]);
+
+            // let mut canvas = Canvas::default()
+            //     // .block(block)
+            //     .block(Block::default().borders(Borders::ALL).title("World").border_style(Style::default().bg(Color::Blue)))
+            //     .paint(|ctx| {
+            //         ctx.draw(&Line {
+            //             x1: 0f64, y1: 0f64, x2: 0f64, y2: 100f64, color: Color::White,
+            //         })
+            //     })
+            //     .x_bounds([-100.0, 100.0])
+            //     .y_bounds([-100.0, 100.0]);
+            // f.render(&mut canvas, block.inner(chunks[1]));
         })?;
 
         match events.next()? {
