@@ -149,37 +149,35 @@ fn main() -> Result<(), Box<dyn Error>> {
                 f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
             }
 
-            // render horizontal
+            // render horizontal bridges
             for i in 0..(number_of_blocks - 1) {
                 let chunk_i = i as usize * 2 + 1;
                 let bridge_chunk = Rect::new(
                     bridge_chunks[chunk_i].x + 1,
-                    bridge_chunks[chunk_i].y,
+                    bridge_chunks[chunk_i].y + 1,
                     bridge_chunks[chunk_i + 2].x - bridge_chunks[chunk_i].x - 1,
-                    bridge_chunks[chunk_i].height,
+                    bridge_chunks[chunk_i].height - 2,
                 );
-                let vec: &Vec<u16> = bridge_hashmap.get(&(i as u16)).unwrap();
-                let ratio_length = vec.iter().fold(0, |acc, x| acc + x);
 
+                let vec_indexes: &Vec<u16> = bridge_hashmap.get(&(i as u16)).unwrap();
                 let bridge_chunks = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints(
-                        vec.iter()
-                            .map(|x| Constraint::Ratio((*x).into(), ratio_length.into()))
+                        helper::calc_distributed_height(y_coordinate + 1, bridge_chunk.height)
+                            .iter()
+                            .map(|x| Constraint::Length(*x))
                             .collect::<Vec<Constraint>>(),
                     )
                     .split(bridge_chunk);
 
                 let mut bridge_horizontal = Block::default()
+                    // .borders(Borders::TOP | Borders::BOTTOM)
                     .borders(Borders::BOTTOM)
                     .border_style(Style::default().fg(Color::Yellow));
 
-                for i in 0..vec.len() {
-                    f.render(
-                        &mut bridge_horizontal,
-                        Block::default().inner(bridge_chunks[i as usize]),
-                    );
-                }
+                vec_indexes.iter().for_each(|i| {
+                    f.render(&mut bridge_horizontal, bridge_chunks[*i as usize]);
+                });
             }
 
             // let bridge_chunk = Rect::new(bridge_chunks[1].x + 1, bridge_chunks[1].y, bridge_chunks[3].x - bridge_chunks[1].x - 1, bridge_chunks[1].height);
