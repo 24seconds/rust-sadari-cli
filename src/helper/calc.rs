@@ -1,4 +1,4 @@
-use rand::{rngs::ThreadRng, Rng};
+use rand::{rngs::ThreadRng, seq::IteratorRandom};
 
 pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
     let width: u16 = (n * block_width + (n - 1) * space_width).into();
@@ -23,10 +23,9 @@ pub fn calc_bridge_indexes(
     number_of_bridge: u8,
     y_coordinate: u16,
 ) -> Vec<u16> {
-    let vec: Vec<u16> = (0..number_of_bridge)
+    let vec: Vec<u16> = (0..y_coordinate)
         .into_iter()
-        .map(|_| rng.gen_range(0, y_coordinate))
-        .collect();
+        .choose_multiple(rng, number_of_bridge as usize);
 
     vec
 }
