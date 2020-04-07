@@ -29,3 +29,22 @@ pub fn calc_bridge_indexes(
 
     vec
 }
+
+pub fn calc_distributed_height(number_of_bridge: u16, height: u16) -> Vec<u16> {
+    let bridge_height: u16 = height / number_of_bridge;
+    let extra_bridges = height % number_of_bridge;
+    let space = if extra_bridges == 0 {
+        0
+    } else {
+        (number_of_bridge / extra_bridges) as usize
+    };
+
+    let mut vec = vec![bridge_height; number_of_bridge as usize];
+    let mut index: usize = 0;
+    for _ in 0..extra_bridges {
+        vec[index] = bridge_height + 1;
+        index += space;
+    }
+
+    vec
+}

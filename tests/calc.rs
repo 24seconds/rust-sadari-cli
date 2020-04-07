@@ -51,3 +51,31 @@ fn calc_bridge_indexes_should_not_have_duplicate() {
     }
 }
 
+#[test]
+fn calc_distributed_height_should_well_distributed() {
+    let height = 30;
+    let number_of_bridge = 11u16;
+
+    fn run(height: u16, number_of_bridge: u16) {
+        let vec = helper::calc_distributed_height(number_of_bridge, height);
+        assert_eq!(number_of_bridge as usize, vec.len());
+
+        let possible_heights = (height / number_of_bridge, height / number_of_bridge + 1);
+        let is_well_distributed = vec
+            .iter()
+            .all(|x| *x == possible_heights.0 || *x == possible_heights.1);
+        assert!(is_well_distributed);
+
+        let sum = vec.iter().fold(0u16, |acc, x| acc + x);
+        assert_eq!(height, sum);
+    }
+
+    for h in 1..height {
+        let height = h;
+        run(height, number_of_bridge);
+    }
+
+    for n in 1..height + 1 {
+        run(height, n);
+    }
+}
