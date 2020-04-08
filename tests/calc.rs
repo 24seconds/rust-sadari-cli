@@ -1,4 +1,4 @@
-use rand::{Rng};
+use rand::Rng;
 use rust_sadari_cli::helper;
 use std::{collections::HashSet, iter::FromIterator};
 
@@ -116,5 +116,22 @@ fn calc_bridge_hashmap_should_distinct_indexes_vec_compared_to_adjacent_vec() {
                 assert!(false, "There should be no None case!");
             }
         }
+    }
+}
+
+#[test]
+fn calc_index_should_in_limit() {
+    let mut index = 0;
+    let limit = 10;
+
+    for _ in 0..20 {
+        index = helper::calc_next_index(index, limit);
+        assert!(index < limit);
+    }
+
+    index = 0;
+    for _ in 0..20 {
+        index = helper::calc_prev_index(index, limit);
+        assert!(index < limit);
     }
 }

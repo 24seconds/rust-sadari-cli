@@ -1,6 +1,6 @@
 use argh;
 mod helper;
-use helper::{read_file, Cli, Event, Events};
+use helper::{calc_next_index, calc_prev_index, read_file, BorderKind, Cli, Event, Events};
 use rand::Rng;
 use std::{
     collections::{HashMap, HashSet},
@@ -51,6 +51,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         y_coordinate,
         &mut rng,
     );
+
+    let mut selected_chunk = 0;
 
     loop {
         terminal.draw(|mut f| {
@@ -111,6 +113,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .borders(Borders::ALL)
                 .border_style(Style::default().fg(Color::Green));
             for i in 0..number_of_blocks {
+                let mut block = block.border_style(Style::default().fg(match i {
+                    _ if i == selected_chunk => BorderKind::Selected.color(),
+                    _ => BorderKind::NotSelected.color(),
+                }));
                 f.render(&mut block, name_chunks[i as usize * 2 + 1]);
             }
 
@@ -265,11 +271,18 @@ fn main() -> Result<(), Box<dyn Error>> {
         })?;
 
         match events.next()? {
-            Event::Input(key) => {
-                if key == Key::Char('q') {
+            Event::Input(key) => match key {
+                Key::Char('q') => {
                     break;
                 }
-            }
+                Key::Left => {
+                    selected_chunk = calc_prev_index(selected_chunk, number_of_blocks);
+                }
+                Key::Right => {
+                    selected_chunk = calc_next_index(selected_chunk, number_of_blocks);
+                }
+                _ => {}
+            },
             _ => {}
         }
     }

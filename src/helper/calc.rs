@@ -83,3 +83,11 @@ pub fn calc_bridge_hashmap(
 
     bridge_hashmap
 }
+
+pub fn calc_next_index(index: u8, limit: u8) -> u8 {
+    (index + 1) % limit
+}
+
+pub fn calc_prev_index(index: u8, limit: u8) -> u8 {
+    (index + limit - 1) % limit
+}

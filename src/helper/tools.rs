@@ -2,6 +2,7 @@ use argh::FromArgs;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
+use tui::style::Color;
 
 struct Line {
     x_i: u32,
@@ -67,4 +68,18 @@ pub fn read_args(args: Vec<String>) {
         .expect("failed to read from stdin");
     let trimmed = input_text.trim();
     println!("trimmed second line is {}", trimmed);
+}
+
+pub enum BorderKind {
+    Selected,
+    NotSelected,
+}
+
+impl BorderKind {
+    pub fn color(self) -> Color {
+        match self {
+            BorderKind::Selected => Color::Red,
+            BorderKind::NotSelected => Color::Green,
+        }
+    }
 }

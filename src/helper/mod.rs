@@ -6,6 +6,7 @@ mod tools;
 pub use tools::{
     // read_args,
     read_file,
+    BorderKind,
     Cli,
 };
 
