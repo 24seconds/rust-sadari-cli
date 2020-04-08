@@ -1,4 +1,8 @@
-use rand::{rngs::ThreadRng, seq::IteratorRandom};
+use rand::{rngs::ThreadRng, seq::IteratorRandom, Rng};
+use std::{
+    collections::{HashMap, HashSet},
+    iter::FromIterator,
+};
 
 pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
     let width: u16 = (n * block_width + (n - 1) * space_width).into();
@@ -21,9 +25,9 @@ pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
 pub fn calc_bridge_indexes(
     rng: &mut ThreadRng,
     number_of_bridge: u8,
-    y_coordinate: u16,
+    vec_candidates: Vec<u16>,
 ) -> Vec<u16> {
-    let vec: Vec<u16> = (0..y_coordinate)
+    let vec: Vec<u16> = vec_candidates
         .into_iter()
         .choose_multiple(rng, number_of_bridge as usize);
 
@@ -47,4 +51,35 @@ pub fn calc_distributed_height(number_of_bridge: u16, height: u16) -> Vec<u16> {
     }
 
     vec
+}
+
+pub fn calc_bridge_hashmap(
+    number_of_blocks: u8,
+    number_of_max_bridges: u8,
+    y_coordinate: u16,
+    rng: &mut ThreadRng,
+) -> HashMap<u16, Vec<u16>> {
+    let mut bridge_hashmap: HashMap<u16, Vec<u16>> = HashMap::new();
+
+    for i in 0..(number_of_blocks - 1) {
+        let number_of_bridge: u8 = rng.gen_range(2, number_of_max_bridges);
+        let range = 0..y_coordinate;
+
+        let vec_candidates = {
+            let index = if i == 0 { 0 } else { (i - 1) as u16 };
+
+            match bridge_hashmap.get(&index) {
+                Some(vec) => {
+                    let set: HashSet<&u16> = HashSet::from_iter(vec.iter());
+                    range.into_iter().filter(|x| !set.contains(x)).collect()
+                }
+                None => range.into_iter().collect(),
+            }
+        };
+
+        let vec = calc_bridge_indexes(rng, number_of_bridge, vec_candidates);
+        bridge_hashmap.insert(i.into(), vec);
+    }
+
+    bridge_hashmap
 }

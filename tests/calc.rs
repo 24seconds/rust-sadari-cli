@@ -1,6 +1,6 @@
-use rand::{seq::IteratorRandom, Rng};
+use rand::{Rng};
 use rust_sadari_cli::helper;
-use std::collections::HashSet;
+use std::{collections::HashSet, iter::FromIterator};
 
 #[test]
 fn calc_name_layout_sum_is_100() {
@@ -22,7 +22,9 @@ fn calc_bridge_indexes_produce_rand_vec() {
 
     for _ in 0..1000 {
         let number_of_bridge = rng.gen_range(2, number_of_max_bridge);
-        let vec = helper::calc_bridge_indexes(&mut rng, number_of_bridge, y_coordinate);
+        let vec_candidate = (0..y_coordinate).into_iter().collect();
+
+        let vec = helper::calc_bridge_indexes(&mut rng, number_of_bridge, vec_candidate);
         assert_eq!(vec.len(), number_of_bridge as usize);
         assert!(vec.iter().all(|x| x >= &0 && x < &y_coordinate));
     }
@@ -31,11 +33,11 @@ fn calc_bridge_indexes_produce_rand_vec() {
 #[test]
 fn calc_bridge_indexes_should_not_have_duplicate() {
     let mut rng = rand::thread_rng();
-    let y_coordinate = 10;
     let number_of_max_bridge = 10;
 
     for number_of_bridge in 2..number_of_max_bridge {
-        let mut vec = helper::calc_bridge_indexes(&mut rng, number_of_bridge, y_coordinate);
+        let vec_candidate = (0..10).into_iter().collect();
+        let mut vec = helper::calc_bridge_indexes(&mut rng, number_of_bridge, vec_candidate);
         &mut vec.sort();
 
         let mut is_duplicate = false;
@@ -77,5 +79,42 @@ fn calc_distributed_height_should_well_distributed() {
 
     for n in 1..height + 1 {
         run(height, n);
+    }
+}
+
+#[test]
+fn calc_bridge_hashmap_should_distinct_indexes_vec_compared_to_adjacent_vec() {
+    let mut rng = rand::thread_rng();
+    let number_of_block = 10;
+    let nubmer_of_max_bridges = 6;
+    let y_coordinate = 10;
+
+    let bridge_hashmap = helper::calc_bridge_hashmap(
+        number_of_block,
+        nubmer_of_max_bridges,
+        y_coordinate,
+        &mut rng,
+    );
+
+    for (key, value) in &bridge_hashmap {
+        println!("{}: {:?}", key, value);
+
+        if *key == 0 {
+            continue;
+        }
+
+        let prev_key = key - 1u16;
+        match bridge_hashmap.get(&prev_key) {
+            Some(vec) => {
+                let set: HashSet<&u16> = HashSet::from_iter(vec.iter());
+
+                let is_duplicate = value.iter().all(|x| !set.contains(x));
+
+                assert!(is_duplicate, "There is duplicate!");
+            }
+            None => {
+                assert!(false, "There should be no None case!");
+            }
+        }
     }
 }
