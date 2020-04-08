@@ -2,7 +2,13 @@ use argh;
 mod helper;
 use helper::{read_file, Cli, Event, Events};
 use rand::Rng;
-use std::{collections::HashMap, error::Error, io, thread, time};
+use std::{
+    collections::{HashMap, HashSet},
+    error::Error,
+    io,
+    iter::FromIterator,
+    thread, time,
+};
 use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{
     backend::TermionBackend,
@@ -35,16 +41,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let events = Events::new();
     let number_of_blocks: u8 = 3;
-    let number_of_max_bridge = 6;
+    let number_of_max_bridges = 6;
     let y_coordinate = 10;
 
-    let mut bridge_hashmap: HashMap<u16, Vec<u16>> = HashMap::new();
     let mut rng = rand::thread_rng();
-    for i in 0..(number_of_blocks - 1) {
-        let number_of_bridge = rng.gen_range(2, number_of_max_bridge);
-        let vec = helper::calc_bridge_indexes(&mut rng, number_of_bridge, y_coordinate);
-        bridge_hashmap.insert(i.into(), vec);
-    }
+    let bridge_hashmap = helper::calc_bridge_hashmap(
+        number_of_blocks,
+        number_of_max_bridges,
+        y_coordinate,
+        &mut rng,
+    );
 
     loop {
         terminal.draw(|mut f| {
