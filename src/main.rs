@@ -272,7 +272,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         match events.next()? {
             Event::Input(key) => match key {
-                Key::Char('q') => {
+                Key::Char('q') | Key::Ctrl('c') => {
                     break;
                 }
                 Key::Left => {
