@@ -77,7 +77,9 @@ pub fn calc_bridge_hashmap(
             }
         };
 
-        let vec = calc_bridge_indexes(rng, number_of_bridge, vec_candidates);
+        let mut vec = calc_bridge_indexes(rng, number_of_bridge, vec_candidates);
+        vec.sort();
+
         bridge_hashmap.insert(i.into(), vec);
     }
 

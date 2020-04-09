@@ -120,6 +120,37 @@ fn calc_bridge_hashmap_should_distinct_indexes_vec_compared_to_adjacent_vec() {
 }
 
 #[test]
+fn calc_bridge_hashmap_is_sorted() {
+    let mut rng = rand::thread_rng();
+    let number_of_block = 10;
+    let nubmer_of_max_bridges = 6;
+    let y_coordinate = 10;
+
+    let bridge_hashmap = helper::calc_bridge_hashmap(
+        number_of_block,
+        nubmer_of_max_bridges,
+        y_coordinate,
+        &mut rng,
+    );
+
+    for (key, value) in &bridge_hashmap {
+        println!("{}: {:?}", key, value);
+
+        let (_, is_sorted) = value.iter().fold((-1, true), |acc, x| {
+            let (prev_num, boolean) = acc;
+
+            if prev_num < (*x as i32) && boolean {
+                (*x as i32, true)
+            } else {
+                (*x as i32, false)
+            }
+        });
+
+        assert!(is_sorted);
+    }
+}
+
+#[test]
 fn calc_index_should_in_limit() {
     let mut index = 0;
     let limit = 10;
