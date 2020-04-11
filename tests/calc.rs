@@ -166,3 +166,75 @@ fn calc_index_should_in_limit() {
         assert!(index < limit);
     }
 }
+
+#[test]
+fn calc_bridge_points_should_not_overlap() {
+    let mut rng = rand::thread_rng();
+    let number_of_block = 10;
+    let nubmer_of_max_bridges = 6;
+    let y_coordinate = 10;
+
+    let bridge_hashmap = helper::calc_bridge_hashmap(
+        number_of_block,
+        nubmer_of_max_bridges,
+        y_coordinate,
+        &mut rng,
+    );
+
+    for index in 0..number_of_block {
+        let vec = helper::calc_bridge_points(index, &bridge_hashmap);
+
+        if index == 0 {
+            let count_1 = bridge_hashmap.get(&0).unwrap().len();
+            let count_2 = vec.iter().filter(|x| x.1 == index + 1).count();
+
+            assert_eq!(count_1, count_2);
+            assert_eq!(vec.len(), count_1);
+        } else if index == number_of_block - 1 {
+            let count_1 = bridge_hashmap.get(&(index as u16 - 1)).unwrap().len();
+            let count_2 = vec.iter().filter(|x| x.1 == index - 1).count();
+
+            assert_eq!(count_1, count_2);
+            assert_eq!(vec.len(), count_1);
+        } else {
+            let count_1 = bridge_hashmap.get(&(index as u16 - 1)).unwrap().len();
+            let count_2 = bridge_hashmap.get(&(index as u16)).unwrap().len();
+
+            let count_3 = vec.iter().filter(|x| x.1 == index - 1).count();
+            let count_4 = vec.iter().filter(|x| x.1 == index + 1).count();
+
+            assert_eq!(count_1, count_3);
+            assert_eq!(count_2, count_4);
+            assert_eq!(vec.len(), count_1 + count_2);
+        }
+    }
+}
+
+#[test]
+pub fn calc_path_result_should_not_overlap() {
+    let mut rng = rand::thread_rng();
+    let number_of_block = 10;
+    let nubmer_of_max_bridges = 6;
+    let y_coordinate = 10;
+
+    let bridge_hashmap = helper::calc_bridge_hashmap(
+        number_of_block,
+        nubmer_of_max_bridges,
+        y_coordinate,
+        &mut rng,
+    );
+
+    let mut result = HashSet::new();
+
+    for index in 0..number_of_block {
+        let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
+
+        let (last_x, _) = path.get(path.len() - 1).unwrap();
+
+        let is_exist = result.contains(last_x);
+        assert_eq!(is_exist, false);
+        result.insert(*last_x);
+    }
+
+    println!("Test cal_path, result is {:?}", result);
+}

@@ -93,3 +93,57 @@ pub fn calc_next_index(index: u8, limit: u8) -> u8 {
 pub fn calc_prev_index(index: u8, limit: u8) -> u8 {
     (index + limit - 1) % limit
 }
+
+pub fn calc_bridge_points(index: u8, hashmap: &HashMap<u16, Vec<u16>>) -> Vec<(u16, u8)> {
+    // left side
+    let vec_1: Option<Vec<(u16, u8)>> = if index == 0 {
+        None
+    } else {
+        hashmap
+            .get(&(index as u16 - 1))
+            .map(|vec| vec.iter().map(|x| (*x, index - 1)).collect())
+    };
+
+    // right side
+    let vec_2: Option<Vec<(u16, u8)>> = hashmap
+        .get(&(index as u16))
+        .map(|vec| vec.iter().map(|x| (*x, index + 1)).collect());
+
+    let mut vec: Vec<(u16, u8)> = Vec::new();
+    for i in vec![vec_1, vec_2].into_iter().filter_map(|x| x).flatten() {
+        vec.push(i)
+    }
+
+    vec.sort_by_key(|k| k.0);
+
+    vec
+}
+
+pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<(u8, u8)> {
+    let mut curr_location = (index, 0u8);
+    let mut path = Vec::new();
+
+    loop {
+        let (x, y) = curr_location;
+        if y == y_max {
+            break;
+        }
+
+        let vec_bridge_points = calc_bridge_points(x, hashmap);
+        let bridge_point = vec_bridge_points.iter().find(|x| x.0 == y as u16);
+
+        match a {
+            Some(v) => {
+                path.push((x, y));
+                path.push((v.1, y));
+
+                curr_location = (v.1, y + 1);
+            }
+            None => {
+                curr_location = (x, y + 1);
+            }
+        }
+    }
+
+    path
+}
