@@ -132,7 +132,7 @@ pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<
         let vec_bridge_points = calc_bridge_points(x, hashmap);
         let bridge_point = vec_bridge_points.iter().find(|x| x.0 == y as u16);
 
-        match a {
+        match bridge_point {
             Some(v) => {
                 path.push((x, y));
                 path.push((v.1, y));
