@@ -96,17 +96,17 @@ pub enum LineDirection {
     Down,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point {
-    pub x: u16,
-    pub y: u16,
+    pub x: i32,
+    pub y: i32,
 }
 
 impl Point {
     pub fn default() -> Self {
         Point { x: 0, y: 0 }
     }
-    pub fn new(x: u16, y: u16) -> Self {
+    pub fn new(x: i32, y: i32) -> Self {
         Point { x, y }
     }
 }

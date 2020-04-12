@@ -157,7 +157,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
             }
 
-            let mut bridge_point_hashmap: HashMap<(u16, i32), Point> = HashMap::new();
+            let mut bridge_point_hashmap: HashMap<Point, Point> = HashMap::new();
 
             // render bridge vertical
             let bridge_chunks: Vec<Rect> = name_chunks
@@ -189,10 +189,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     height,
                 } = bridge_chunks[i as usize * 2 + 1];
 
-                bridge_point_hashmap.insert((i as u16, -1), Point::new(x, y));
+                bridge_point_hashmap.insert(Point::new(i as i32, -1), Point::new(x as i32, y as i32));
                 bridge_point_hashmap.insert(
-                    (i as u16, y_coordinate as i32),
-                    Point::new(x, y + height - 1),
+                    Point::new(i as i32, y_coordinate as i32),
+                    Point::new(x as i32, (y + height - 1) as i32),
                 );
             }
 
@@ -234,12 +234,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                     } = bridge_chunks[*vec_index as usize];
 
                     bridge_point_hashmap.insert(
-                        (i as u16, *vec_index as i32),
-                        Point::new(x - 1, y + height - 1),
+                        Point::new(i as i32, *vec_index as i32),
+                        Point::new(x as i32 - 1, (y + height - 1) as i32),
                     );
                     bridge_point_hashmap.insert(
-                        (i as u16 + 1, *vec_index as i32),
-                        Point::new(x - 1 + width + 1, y + height - 1),
+                        Point::new(i as i32 + 1, *vec_index as i32),
+                        Point::new((x - 1 + width + 1) as i32, (y + height - 1) as i32),
                     );
                 });
             }
