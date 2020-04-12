@@ -7,8 +7,10 @@ use std::{
     io,
     io::prelude::*,
 };
-use tui::style::Color;
-use tui::widgets::Block;
+use tui::{
+    style::{Color, Style},
+    widgets::{Block, Borders},
+};
 
 struct Line {
     x_i: u32,
@@ -129,3 +131,8 @@ where
     eprintln!("{} --------------\n", &name);
 }
 
+pub fn create_simple_block<'a>(borders: Borders, color: Color) -> Block<'a> {
+    Block::default()
+        .borders(borders)
+        .border_style(Style::default().fg(color))
+}

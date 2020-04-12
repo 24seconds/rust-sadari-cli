@@ -4,6 +4,7 @@ mod event;
 mod tools;
 
 pub use tools::{
+    create_simple_block,
     print_hashmap,
     // read_args,
     read_file,

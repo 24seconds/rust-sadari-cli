@@ -1,8 +1,8 @@
 use argh;
 mod helper;
 use helper::{
-    calc_next_index, calc_prev_index, read_file, BorderKind, Cli, Event, Events, LineDirection,
-    Point,
+    calc_next_index, calc_prev_index, create_simple_block, read_file, BorderKind, Cli, Event,
+    Events, LineDirection, Point,
 };
 use rand::Rng;
 use std::{
@@ -57,7 +57,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     );
 
     let mut selected_chunk = 1u8;
-
     let mut path_hashmap = HashMap::new();
     for index in 0..number_of_blocks {
         let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
@@ -75,7 +74,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     loop {
         terminal.draw(|mut f| {
-            let size = f.size();
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(
@@ -128,14 +126,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 )
                 .split(name_chunk);
 
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Green));
             for i in 0..number_of_blocks {
-                let mut block = block.border_style(Style::default().fg(match i {
-                    _ if i == selected_chunk => BorderKind::Selected.color(),
-                    _ => BorderKind::NotSelected.color(),
-                }));
+                let mut block = create_simple_block(
+                    Borders::ALL,
+                    match i {
+                        _ if i == selected_chunk => BorderKind::Selected.color(),
+                        _ => BorderKind::NotSelected.color(),
+                    },
+                );
                 f.render(&mut block, name_chunks[i as usize * 2 + 1]);
             }
 
@@ -150,9 +148,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 )
                 .split(result_chunk);
 
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Blue));
+            let mut block = create_simple_block(Borders::ALL, Color::Blue);
             for i in 0..number_of_blocks {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
             }
@@ -174,10 +170,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     )
                 })
                 .collect();
-            let mut line = Block::default()
-                .borders(Borders::LEFT)
-                .border_style(Style::default().fg(Color::LightBlue));
 
+            let mut line = create_simple_block(Borders::LEFT, Color::LightBlue);
             for i in 0..number_of_blocks {
                 f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
 
@@ -189,7 +183,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     height,
                 } = bridge_chunks[i as usize * 2 + 1];
 
-                bridge_point_hashmap.insert(Point::new(i as i32, -1), Point::new(x as i32, y as i32));
+                bridge_point_hashmap
+                    .insert(Point::new(i as i32, -1), Point::new(x as i32, y as i32));
                 bridge_point_hashmap.insert(
                     Point::new(i as i32, y_coordinate as i32),
                     Point::new(x as i32, (y + height - 1) as i32),
@@ -217,11 +212,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     )
                     .split(bridge_chunk);
 
-                let mut bridge_horizontal = Block::default()
-                    // .borders(Borders::TOP | Borders::BOTTOM)
-                    .borders(Borders::BOTTOM)
-                    .border_style(Style::default().fg(Color::Yellow));
-
+                let mut bridge_horizontal = create_simple_block(Borders::BOTTOM, Color::Yellow);
                 vec_indexes.iter().for_each(|vec_index| {
                     f.render(&mut bridge_horizontal, bridge_chunks[*vec_index as usize]);
 
@@ -246,9 +237,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             // draw animation
             let path = path_hashmap.get(&selected_chunk).unwrap();
-
-            // not work, tuple is not implemented for Debug trait
-            // helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
+            helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
 
             let mut current_path_index = 0;
             let mut left_tick = tick;
@@ -264,15 +253,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 left_tick = tick;
                 current_path_index = next_path_index as usize;
 
-                let line = Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Green));
-
-                let mut line = match direction {
-                    LineDirection::Down => line.borders(Borders::LEFT),
-                    LineDirection::Right => line.borders(Borders::TOP),
-                    LineDirection::Left => line.borders(Borders::TOP),
-                };
+                let mut line = create_simple_block(
+                    match direction {
+                        LineDirection::Down => Borders::LEFT,
+                        LineDirection::Right => Borders::TOP,
+                        LineDirection::Left => Borders::TOP,
+                    },
+                    Color::Green,
+                );
 
                 f.render(&mut line, area);
             }
@@ -281,9 +269,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 // result chunk border should be red
                 let (result_index, _) = path.last().unwrap();
 
-                let mut block = Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(Color::Red));
+                let mut block = create_simple_block(Borders::ALL, Color::Red);
                 f.render(&mut block, result_chunks[*result_index as usize * 2 + 1]);
             }
 
@@ -295,7 +281,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             //         .borders(Borders::TOP)
             //         .border_style(Style::default().fg(Color::Red));
 
-            //     f.render(&mut point, Rect::new(value.x, value.y, 2, 2));
+            //     f.render(&mut point, Rect::new(value.x as u16, value.y as u16, 2, 2));
             // }
         })?;
 
