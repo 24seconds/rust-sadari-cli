@@ -1,8 +1,14 @@
 use argh::FromArgs;
-use std::fs::File;
-use std::io;
-use std::io::prelude::*;
+use std::{
+    collections::HashMap,
+    fmt,
+    fmt::{Debug, Display},
+    fs::File,
+    io,
+    io::prelude::*,
+};
 use tui::style::Color;
+use tui::widgets::Block;
 
 struct Line {
     x_i: u32,
@@ -83,3 +89,43 @@ impl BorderKind {
         }
     }
 }
+
+pub enum LineDirection {
+    Left,
+    Right,
+    Down,
+}
+
+#[derive(Debug)]
+pub struct Point {
+    pub x: u16,
+    pub y: u16,
+}
+
+impl Point {
+    pub fn default() -> Self {
+        Point { x: 0, y: 0 }
+    }
+    pub fn new(x: u16, y: u16) -> Self {
+        Point { x, y }
+    }
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "(x: {}, y: {})", self.x, self.y)
+    }
+}
+
+pub fn print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
+where
+    K: Debug + Display,
+    V: Debug,
+{
+    eprintln!("\n{} --------------", &name);
+    for (key, value) in hashmap {
+        eprintln!("key : {}, value : {:?}", key, value);
+    }
+    eprintln!("{} --------------\n", &name);
+}
+

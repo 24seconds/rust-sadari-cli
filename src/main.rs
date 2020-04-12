@@ -1,6 +1,9 @@
 use argh;
 mod helper;
-use helper::{calc_next_index, calc_prev_index, read_file, BorderKind, Cli, Event, Events};
+use helper::{
+    calc_next_index, calc_prev_index, read_file, BorderKind, Cli, Event, Events, LineDirection,
+    Point,
+};
 use rand::Rng;
 use std::{
     collections::{HashMap, HashSet},
@@ -21,6 +24,7 @@ use tui::{
     },
     Terminal,
 };
+// use Extend::extend;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // let cli: Cli = argh::from_env();
@@ -52,7 +56,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         &mut rng,
     );
 
-    let mut selected_chunk = 0;
+    let mut selected_chunk = 1u8;
+
+    let mut path_hashmap = HashMap::new();
+    for index in 0..number_of_blocks {
+        let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
+        path_hashmap.insert(index, path);
+    }
+
+    helper::print_hashmap(String::from("bridge_hashmap"), &bridge_hashmap);
+    helper::print_hashmap(String::from("path_hashmap"), &path_hashmap);
+
+    let mut tick = 0;
+    let tic_speed = 5;
+
+    // prevent key event input while doing animation
+    let mut is_doing_animation: bool = false;
 
     loop {
         terminal.draw(|mut f| {
@@ -138,6 +157,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
             }
 
+            let mut bridge_point_hashmap: HashMap<(u16, i32), Point> = HashMap::new();
+
             // render bridge vertical
             let bridge_chunks: Vec<Rect> = name_chunks
                 .iter()
@@ -159,9 +180,23 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             for i in 0..number_of_blocks {
                 f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
+
+                // collect bridge vertical points
+                let Rect {
+                    x,
+                    y,
+                    width: _,
+                    height,
+                } = bridge_chunks[i as usize * 2 + 1];
+
+                bridge_point_hashmap.insert((i as u16, -1), Point::new(x, y));
+                bridge_point_hashmap.insert(
+                    (i as u16, y_coordinate as i32),
+                    Point::new(x, y + height - 1),
+                );
             }
 
-            // render horizontal bridges
+            // render bridge horizontal
             for i in 0..(number_of_blocks - 1) {
                 let chunk_i = i as usize * 2 + 1;
                 let bridge_chunk = Rect::new(
@@ -187,10 +222,81 @@ fn main() -> Result<(), Box<dyn Error>> {
                     .borders(Borders::BOTTOM)
                     .border_style(Style::default().fg(Color::Yellow));
 
-                vec_indexes.iter().for_each(|i| {
-                    f.render(&mut bridge_horizontal, bridge_chunks[*i as usize]);
+                vec_indexes.iter().for_each(|vec_index| {
+                    f.render(&mut bridge_horizontal, bridge_chunks[*vec_index as usize]);
+
+                    // collect bridge horizontal points
+                    let Rect {
+                        x,
+                        y,
+                        width,
+                        height,
+                    } = bridge_chunks[*vec_index as usize];
+
+                    bridge_point_hashmap.insert(
+                        (i as u16, *vec_index as i32),
+                        Point::new(x - 1, y + height - 1),
+                    );
+                    bridge_point_hashmap.insert(
+                        (i as u16 + 1, *vec_index as i32),
+                        Point::new(x - 1 + width + 1, y + height - 1),
+                    );
                 });
             }
+
+            // draw animation
+            let path = path_hashmap.get(&selected_chunk).unwrap();
+
+            // not work, tuple is not implemented for Debug trait
+            // helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
+
+            let mut current_path_index = 0;
+            let mut left_tick = tick;
+            while left_tick > 0 && current_path_index < path.len() as usize {
+                let (tick, area, direction, next_path_index) = helper::calc_partial_line(
+                    &bridge_point_hashmap,
+                    &path,
+                    left_tick,
+                    current_path_index as i32,
+                    selected_chunk,
+                );
+
+                left_tick = tick;
+                current_path_index = next_path_index as usize;
+
+                let line = Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Green));
+
+                let mut line = match direction {
+                    LineDirection::Down => line.borders(Borders::LEFT),
+                    LineDirection::Right => line.borders(Borders::TOP),
+                    LineDirection::Left => line.borders(Borders::TOP),
+                };
+
+                f.render(&mut line, area);
+            }
+
+            if current_path_index == path.len() {
+                // result chunk border should be red
+                let (result_index, _) = path.last().unwrap();
+
+                let mut block = Block::default()
+                    .borders(Borders::ALL)
+                    .border_style(Style::default().fg(Color::Red));
+                f.render(&mut block, result_chunks[*result_index as usize * 2 + 1]);
+            }
+
+            tick += tic_speed;
+
+            // render all points for debug
+            // for (_, value) in bridge_point_hashmap {
+            //     let mut point = Block::default()
+            //         .borders(Borders::TOP)
+            //         .border_style(Style::default().fg(Color::Red));
+
+            //     f.render(&mut point, Rect::new(value.x, value.y, 2, 2));
+            // }
 
             // let bridge_chunk = Rect::new(bridge_chunks[1].x + 1, bridge_chunks[1].y, bridge_chunks[3].x - bridge_chunks[1].x - 1, bridge_chunks[1].height);
             // // let bridge_chunk = Rect::new( x: u16, y: u16, width: u16, height: u16);
@@ -281,7 +387,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Key::Right => {
                     selected_chunk = calc_next_index(selected_chunk, number_of_blocks);
                 }
-                _ => {}
+                Key::Char('s') => {
+                    // TODO: Start animation based on selected_chunk. prevent arrow key input while doing animation
+                }
+                _ => {
+                    eprintln!("key : {:?}", key);
+                }
             },
             _ => {}
         }

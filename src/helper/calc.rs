@@ -1,8 +1,11 @@
+use crate::helper::{LineDirection, Point};
 use rand::{rngs::ThreadRng, seq::IteratorRandom, Rng};
 use std::{
+    cmp::min,
     collections::{HashMap, HashSet},
     iter::FromIterator,
 };
+use tui::layout::Rect;
 
 pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
     let width: u16 = (n * block_width + (n - 1) * space_width).into();
@@ -126,6 +129,7 @@ pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<
     loop {
         let (x, y) = curr_location;
         if y == y_max {
+            path.push((x, y));
             break;
         }
 
@@ -146,4 +150,81 @@ pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<
     }
 
     path
+}
+
+pub fn calc_partial_line(
+    point_hashmap: &HashMap<(u16, i32), Point>,
+    path: &Vec<(u8, u8)>,
+    tick: i32,
+    index: i32,
+    selected_chunk: u8,
+) -> (i32, Rect, LineDirection, i32) {
+    // eprintln!("\n calc_partial_line ---------");
+    // eprintln!("index is {}, tick is {}", index, tick);
+
+    let start_point: (u16, i32) = if index == 0 {
+        (selected_chunk as u16, -1)
+    } else {
+        let (x, y) = path.get(index as usize - 1).unwrap();
+
+        (*x as u16, *y as i32)
+    };
+    let end_point = {
+        let (x, y) = path.get(index as usize).unwrap();
+
+        (*x as u16, *y as i32)
+    };
+
+    // eprintln!(
+    //     "before mapping, start_point is {},{} / end_point is {},{}",
+    //     start_point.0, start_point.1, end_point.0, end_point.1
+    // );
+
+    let start_point = point_hashmap.get(&start_point).unwrap();
+    let end_point = point_hashmap.get(&end_point).unwrap();
+
+    // eprintln!(
+    //     "after maping, start_point is {:?} / end_point is {:?}",
+    //     &start_point, &end_point
+    // );
+
+    let tuple = if start_point.x == end_point.x {
+        // direction down
+        let length = (end_point.y - start_point.y) as i32 - 1;
+        let length = min(tick, length);
+
+        let area = Rect::new(start_point.x, start_point.y + 1, 2, length as u16);
+        let left_tick = tick - length;
+        let next_index = if left_tick > 0 { index + 1 } else { index };
+
+        (left_tick, area, LineDirection::Down, next_index)
+    } else if start_point.x < end_point.x {
+        // direction right
+        let length = (end_point.x - start_point.x) as i32 - 1;
+        let length = min(tick, length);
+
+        let area = Rect::new(start_point.x + 1, start_point.y, length as u16, 2);
+        let left_tick = tick - length;
+        let next_index = if left_tick > 0 { index + 1 } else { index };
+
+        (left_tick, area, LineDirection::Right, next_index)
+    } else {
+        // direction left
+        let length = (start_point.x - end_point.x) as i32 - 1;
+        let length = min(tick, length);
+
+        let area = Rect::new(
+            start_point.x - length as u16,
+            start_point.y,
+            length as u16,
+            2,
+        );
+        let left_tick = tick - length;
+        let next_index = if left_tick > 0 { index + 1 } else { index };
+
+        (left_tick, area, LineDirection::Left, next_index)
+    };
+
+    // eprintln!("calc_partial_line --------- \n");
+    tuple
 }
