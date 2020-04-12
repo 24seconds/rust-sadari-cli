@@ -180,8 +180,12 @@ pub fn calc_partial_line(
     //     start_point.0, start_point.1, end_point.0, end_point.1
     // );
 
-    let start_point = point_hashmap.get(&Point::new(start_point.0 as i32, start_point.1)).unwrap();
-    let end_point = point_hashmap.get(&Point::new(end_point.0 as i32, end_point.1)).unwrap();
+    let start_point = point_hashmap
+        .get(&Point::new(start_point.0 as i32, start_point.1))
+        .unwrap();
+    let end_point = point_hashmap
+        .get(&Point::new(end_point.0 as i32, end_point.1))
+        .unwrap();
 
     // eprintln!(
     //     "after maping, start_point is {:?} / end_point is {:?}",
@@ -193,7 +197,12 @@ pub fn calc_partial_line(
         let length = (end_point.y - start_point.y) as i32 - 1;
         let length = min(tick, length);
 
-        let area = Rect::new(start_point.x as u16, start_point.y as u16 + 1, 2, length as u16);
+        let area = Rect::new(
+            start_point.x as u16,
+            start_point.y as u16 + 1,
+            2,
+            length as u16,
+        );
         let left_tick = tick - length;
         let next_index = if left_tick > 0 { index + 1 } else { index };
 
@@ -203,7 +212,12 @@ pub fn calc_partial_line(
         let length = (end_point.x - start_point.x) as i32 - 1;
         let length = min(tick, length);
 
-        let area = Rect::new(start_point.x as u16 + 1, start_point.y as u16, length as u16, 2);
+        let area = Rect::new(
+            start_point.x as u16 + 1,
+            start_point.y as u16,
+            length as u16,
+            2,
+        );
         let left_tick = tick - length;
         let next_index = if left_tick > 0 { index + 1 } else { index };
 
