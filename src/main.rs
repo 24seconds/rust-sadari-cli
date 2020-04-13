@@ -184,10 +184,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 } = bridge_chunks[i as usize * 2 + 1];
 
                 bridge_point_hashmap
-                    .insert(Point::new(i as i32, -1), Point::new(x as i32, y as i32));
+                    .insert(Point::new(i as i32, -1), Point::new(x as i32, y as i32 - 1));
                 bridge_point_hashmap.insert(
                     Point::new(i as i32, y_coordinate as i32),
-                    Point::new(x as i32, (y + height - 1) as i32),
+                    Point::new(x as i32, (y + height) as i32),
                 );
             }
 
