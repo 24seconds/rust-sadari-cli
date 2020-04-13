@@ -87,7 +87,7 @@ impl BorderKind {
     pub fn color(self) -> Color {
         match self {
             BorderKind::Selected => Color::Red,
-            BorderKind::NotSelected => Color::Green,
+            BorderKind::NotSelected => Color::White,
         }
     }
 }

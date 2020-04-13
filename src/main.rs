@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         &mut rng,
     );
 
-    let mut selected_chunk = 1u8;
+    let mut selected_chunk = 0u8;
     let mut path_hashmap = HashMap::new();
     for index in 0..number_of_blocks {
         let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
@@ -86,12 +86,15 @@ fn main() -> Result<(), Box<dyn Error>> {
                 )
                 .split(f.size());
 
+            // draw guide text
             let guide_chunk = chunks[0];
             let guide_chunk = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(
                     [
-                        Constraint::Percentage(100), // main render
+                        Constraint::Percentage(33),
+                        Constraint::Percentage(34),
+                        Constraint::Percentage(33),
                     ]
                     .as_ref(),
                 )
@@ -99,27 +102,44 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .vertical_margin(1)
                 .split(guide_chunk);
 
-            // draw guide text
-            let text = [
-                Text::raw(
-                    r#"
-Commands
-    ←, → : Left, Right     s, enter : Start path animation
-    q    : Quit            r        : Go to result
+            let text = [Text::raw(
+                r#"
+←, → or h,l : Left, Right     s, enter : Start path animation
+q           : Quit            r        : Go to result
                 "#,
-                ),
-            ];
+            )];
 
             let block = Block::default()
                 .borders(Borders::NONE)
                 .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Blue))
-                .title("Rust-Sadari-Cli");
-
+                .title("Rust-Sadari-Cli!");
             let mut paragraph = Paragraph::new(text.iter())
                 .block(block)
                 .alignment(Alignment::Left);
-            f.render(&mut paragraph, guide_chunk[0]);
+            f.render(&mut paragraph, guide_chunk[1]);
 
+            // draw footer
+            let footer_chunk = chunks[2];
+            let footer_chunk = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    [
+                        Constraint::Percentage(100),
+                        // Constraint::Percentage(100),
+                    ]
+                    .as_ref(),
+                )
+                .horizontal_margin(10)
+                .split(footer_chunk);
+
+            let text = [Text::styled(
+                "\n\n🍺 Github: 24seconds/rust-sadari-cli, powered by 24seconds",
+                Style::default().fg(Color::Yellow),
+            )];
+            let mut paragraph = Paragraph::new(text.iter()).alignment(Alignment::Center);
+            f.render(&mut paragraph, footer_chunk[0]);
+
+            // main chunk part
             let main_chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .constraints(
@@ -139,7 +159,6 @@ Commands
             f.render(&mut block, main_chunks[0]);
             let mut block = Block::default()
                 .borders(Borders::ALL)
-                // .style(Style::default().bg(Color::Yellow));
                 .style(Style::default());
             f.render(&mut block, main_chunks[1]);
             let mut block = Block::default()
@@ -182,7 +201,7 @@ Commands
                 )
                 .split(result_chunk);
 
-            let mut block = create_simple_block(Borders::ALL, Color::Blue);
+            let mut block = create_simple_block(Borders::ALL, Color::White);
             for i in 0..number_of_blocks {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
             }
@@ -335,18 +354,18 @@ Commands
                 Key::Char('q') | Key::Ctrl('c') => {
                     break;
                 }
-                val if (val == Key::Left) | (val == Key::Right) => {
+                val if [Key::Left, Key::Right, Key::Char('h'), Key::Char('l')].contains(&val) => {
                     match rendering_state {
                         RenderingState::Idle | RenderingState::Done => {
                             rendering_state = RenderingState::Idle;
                             tick = 0;
 
                             match key {
-                                Key::Left => {
+                                Key::Left | Key::Char('h') => {
                                     selected_chunk =
                                         calc_prev_index(selected_chunk, number_of_blocks);
                                 }
-                                Key::Right => {
+                                Key::Right | Key::Char('l') => {
                                     selected_chunk =
                                         calc_next_index(selected_chunk, number_of_blocks);
                                 }
