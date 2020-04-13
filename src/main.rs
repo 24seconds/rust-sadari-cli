@@ -67,10 +67,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     // helper::print_hashmap(String::from("path_hashmap"), &path_hashmap);
 
     let mut tick = 0;
-    let tic_speed = 5;
+    let tic_speed = 1;
 
     // prevent key event input while doing animation
-    let mut is_doing_animation: bool = false;
     let mut rendering_state = RenderingState::Idle;
 
     loop {
