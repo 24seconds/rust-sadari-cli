@@ -137,6 +137,7 @@ pub fn create_simple_block<'a>(borders: Borders, color: Color) -> Block<'a> {
         .border_style(Style::default().fg(color))
 }
 
+#[derive(PartialEq)]
 pub enum RenderingState {
     Idle,
     Drawing,

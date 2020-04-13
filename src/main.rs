@@ -293,6 +293,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             // }
         })?;
 
+        if rendering_state == RenderingState::Drawing {
+            continue;
+        }
+
         match events.next()? {
             Event::Input(key) => match key {
                 Key::Char('q') | Key::Ctrl('c') => {
