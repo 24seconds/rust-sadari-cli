@@ -11,6 +11,7 @@ pub use tools::{
     BorderKind,
     Cli,
     LineDirection,
+    LineWidget,
     Point,
     RenderingState,
 };

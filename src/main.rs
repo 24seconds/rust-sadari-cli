@@ -2,7 +2,7 @@ use argh;
 mod helper;
 use helper::{
     calc_next_index, calc_prev_index, create_simple_block, read_file, BorderKind, Cli, Event,
-    Events, LineDirection, Point, RenderingState,
+    Events, LineDirection, LineWidget, Point, RenderingState,
 };
 use rand::Rng;
 use std::{
@@ -18,6 +18,7 @@ use tui::{
     buffer::Buffer,
     layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style},
+    symbols,
     widgets::{
         canvas::{Canvas, Line},
         Block, Borders, Paragraph, Text, Widget,
@@ -307,14 +308,16 @@ q           : Quit            r        : Go to result
                 left_tick = tick;
                 current_path_index = next_path_index as usize;
 
-                let mut line = create_simple_block(
-                    match direction {
-                        LineDirection::Down => Borders::LEFT,
-                        LineDirection::Right => Borders::TOP,
-                        LineDirection::Left => Borders::TOP,
-                    },
-                    Color::Green,
-                );
+                let mut line = match direction {
+                    LineDirection::Down => {
+                        LineWidget::default().border_style(Style::default().fg(Color::Green))
+                    }
+                    LineDirection::Right | LineDirection::Left => {
+                        LineWidget::default()
+                            .border_style(Style::default().fg(Color::Green))
+                            .line_type(symbols::line::HORIZONTAL)
+                    }
+                };
 
                 f.render(&mut line, area);
             }
