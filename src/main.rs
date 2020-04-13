@@ -153,18 +153,19 @@ q           : Quit            r        : Go to result
                 .horizontal_margin(10)
                 .split(chunks[1]);
 
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .style(Style::default().bg(Color::Green));
-            f.render(&mut block, main_chunks[0]);
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .style(Style::default());
-            f.render(&mut block, main_chunks[1]);
-            let mut block = Block::default()
-                .borders(Borders::ALL)
-                .style(Style::default().bg(Color::White));
-            f.render(&mut block, main_chunks[2]);
+
+            // let mut block = Block::default()
+            //     .borders(Borders::ALL)
+            //     .style(Style::default().bg(Color::Green));
+            // f.render(&mut block, main_chunks[0]);
+            // let mut block = Block::default()
+            //     .borders(Borders::ALL)
+            //     .style(Style::default());
+            // f.render(&mut block, main_chunks[1]);
+            // let mut block = Block::default()
+            //     .borders(Borders::ALL)
+            //     .style(Style::default().bg(Color::White));
+            // f.render(&mut block, main_chunks[2]);
 
             let name_chunk = main_chunks[0];
             let vec = helper::calc_names_layout(number_of_blocks, 20, 10);
