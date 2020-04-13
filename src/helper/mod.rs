@@ -12,6 +12,7 @@ pub use tools::{
     Cli,
     LineDirection,
     Point,
+    RenderingState,
 };
 
 pub use calc::*;

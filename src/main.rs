@@ -2,7 +2,7 @@ use argh;
 mod helper;
 use helper::{
     calc_next_index, calc_prev_index, create_simple_block, read_file, BorderKind, Cli, Event,
-    Events, LineDirection, Point,
+    Events, LineDirection, Point, RenderingState,
 };
 use rand::Rng;
 use std::{
@@ -63,14 +63,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         path_hashmap.insert(index, path);
     }
 
-    helper::print_hashmap(String::from("bridge_hashmap"), &bridge_hashmap);
-    helper::print_hashmap(String::from("path_hashmap"), &path_hashmap);
+    // helper::print_hashmap(String::from("bridge_hashmap"), &bridge_hashmap);
+    // helper::print_hashmap(String::from("path_hashmap"), &path_hashmap);
 
     let mut tick = 0;
     let tic_speed = 5;
 
     // prevent key event input while doing animation
     let mut is_doing_animation: bool = false;
+    let mut rendering_state = RenderingState::Idle;
 
     loop {
         terminal.draw(|mut f| {
@@ -237,7 +238,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             // draw animation
             let path = path_hashmap.get(&selected_chunk).unwrap();
-            helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
+            // helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
 
             let mut current_path_index = 0;
             let mut left_tick = tick;
@@ -271,9 +272,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                 let mut block = create_simple_block(Borders::ALL, Color::Red);
                 f.render(&mut block, result_chunks[*result_index as usize * 2 + 1]);
+
+                rendering_state = RenderingState::Done;
             }
 
-            tick += tic_speed;
+            match rendering_state {
+                RenderingState::Idle | RenderingState::Done => {}
+                RenderingState::Drawing => {
+                    tick += tic_speed;
+                }
+            };
 
             // render all points for debug
             // for (_, value) in bridge_point_hashmap {
@@ -290,14 +298,29 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Key::Char('q') | Key::Ctrl('c') => {
                     break;
                 }
-                Key::Left => {
-                    selected_chunk = calc_prev_index(selected_chunk, number_of_blocks);
+                val if (val == Key::Left) | (val == Key::Right) => {
+                    match rendering_state {
+                        RenderingState::Idle | RenderingState::Done => {
+                            rendering_state = RenderingState::Idle;
+                            tick = 0;
+
+                            match key {
+                                Key::Left => {
+                                    selected_chunk =
+                                        calc_prev_index(selected_chunk, number_of_blocks);
+                                }
+                                Key::Right => {
+                                    selected_chunk =
+                                        calc_next_index(selected_chunk, number_of_blocks);
+                                }
+                                _ => {}
+                            };
+                        }
+                        RenderingState::Drawing => {}
+                    };
                 }
-                Key::Right => {
-                    selected_chunk = calc_next_index(selected_chunk, number_of_blocks);
-                }
-                Key::Char('s') => {
-                    // TODO: Start animation based on selected_chunk. prevent arrow key input while doing animation
+                Key::Char('\u{000A}') | Key::Char('s') => {
+                    rendering_state = RenderingState::Drawing;
                 }
                 _ => {
                     eprintln!("key : {:?}", key);
