@@ -16,11 +16,11 @@ use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::Altern
 use tui::{
     backend::TermionBackend,
     buffer::Buffer,
-    layout::{Constraint, Direction, Layout, Margin, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
     style::{Color, Modifier, Style},
     widgets::{
         canvas::{Canvas, Line},
-        Block, Borders, Widget,
+        Block, Borders, Paragraph, Text, Widget,
     },
     Terminal,
 };
@@ -78,13 +78,47 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .direction(Direction::Vertical)
                 .constraints(
                     [
-                        Constraint::Percentage(10), // guide to user
+                        Constraint::Percentage(15), // guide to user
                         Constraint::Percentage(80), // main render
-                        Constraint::Percentage(10),
+                        Constraint::Percentage(5),
                     ]
                     .as_ref(),
                 )
                 .split(f.size());
+
+            let guide_chunk = chunks[0];
+            let guide_chunk = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints(
+                    [
+                        Constraint::Percentage(100), // main render
+                    ]
+                    .as_ref(),
+                )
+                .horizontal_margin(10)
+                .vertical_margin(1)
+                .split(guide_chunk);
+
+            // draw guide text
+            let text = [
+                Text::raw(
+                    r#"
+Commands
+    ←, → : Left, Right     s, enter : Start path animation
+    q    : Quit            r        : Go to result
+                "#,
+                ),
+            ];
+
+            let block = Block::default()
+                .borders(Borders::NONE)
+                .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Blue))
+                .title("Rust-Sadari-Cli");
+
+            let mut paragraph = Paragraph::new(text.iter())
+                .block(block)
+                .alignment(Alignment::Left);
+            f.render(&mut paragraph, guide_chunk[0]);
 
             let main_chunks = Layout::default()
                 .direction(Direction::Vertical)
