@@ -45,7 +45,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.hide_cursor()?;
 
     let events = Events::new();
-    let number_of_blocks: u8 = 3;
+
+    // let max number_blocks be 12!
+    let number_of_blocks: u8 = 12;
     let number_of_max_bridges = 6;
     let y_coordinate = 10;
 
@@ -154,7 +156,6 @@ q           : Quit            r        : Go to result
                 .horizontal_margin(10)
                 .split(chunks[1]);
 
-
             // let mut block = Block::default()
             //     .borders(Borders::ALL)
             //     .style(Style::default().bg(Color::Green));
@@ -169,7 +170,7 @@ q           : Quit            r        : Go to result
             // f.render(&mut block, main_chunks[2]);
 
             let name_chunk = main_chunks[0];
-            let vec = helper::calc_names_layout(number_of_blocks, 20, 10);
+            let vec = helper::calc_names_layout(number_of_blocks, 2, 1).unwrap();
 
             // render name_chunks
             let name_chunks = Layout::default()
@@ -310,13 +311,11 @@ q           : Quit            r        : Go to result
 
                 let mut line = match direction {
                     LineDirection::Down => {
-                        LineWidget::default().border_style(Style::default().fg(Color::Green))
+                        LineWidget::default().border_style(Style::default().fg(Color::Red))
                     }
-                    LineDirection::Right | LineDirection::Left => {
-                        LineWidget::default()
-                            .border_style(Style::default().fg(Color::Green))
-                            .line_type(symbols::line::HORIZONTAL)
-                    }
+                    LineDirection::Right | LineDirection::Left => LineWidget::default()
+                        .border_style(Style::default().fg(Color::Red))
+                        .line_type(symbols::line::HORIZONTAL),
                 };
 
                 f.render(&mut line, area);

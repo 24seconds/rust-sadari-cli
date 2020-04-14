@@ -4,14 +4,33 @@ use std::{collections::HashSet, iter::FromIterator};
 
 #[test]
 fn calc_name_layout_sum_is_100() {
-    let mut sum = 0;
-    let vec = helper::calc_names_layout(3, 10, 2);
+    let iter = 12;
+    let block_width_ratio = 8;
+    let space_width_ratio = 2;
 
-    for item in &vec {
-        sum += item;
+    for number_of_blocks in 2..(iter + 1) {
+        let mut sum = 0;
+        let vec = helper::calc_names_layout(number_of_blocks, block_width_ratio, space_width_ratio);
+
+        match vec {
+            Ok(v) => {
+                for item in &v {
+                    sum += item;
+                }
+                let is_positive = &v
+                    .iter()
+                    .enumerate()
+                    .all(|(index, value)| value > &0 || index == 0 || index == v.len() - 1);
+                assert_eq!(sum, 100);
+                assert_eq!(*is_positive, true);
+            }
+            Err((unit_width, string)) => {
+                println!("{}", &string);
+                assert!(string.contains("unit_width"));
+                assert_eq!(unit_width, 0);
+            }
+        }
     }
-
-    assert_eq!(sum, 100);
 }
 
 #[test]

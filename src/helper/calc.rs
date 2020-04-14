@@ -7,22 +7,37 @@ use std::{
 };
 use tui::layout::Rect;
 
-pub fn calc_names_layout(n: u8, block_width: u8, space_width: u8) -> Vec<u16> {
-    let width: u16 = (n * block_width + (n - 1) * space_width).into();
-    let left_margin: u16 = ((100 - width) / 2).into();
-    let right_margin: u16 = (100 - width - left_margin).into();
+pub fn calc_names_layout(
+    number_of_blocks: u8,
+    block_width_ratio: u8,
+    space_width_ratio: u8,
+) -> Result<Vec<u16>, (u8, String)> {
+    let total_ratio =
+        number_of_blocks * block_width_ratio + (number_of_blocks - 1) * space_width_ratio;
+    let unit_width = 100 / total_ratio;
 
-    let vec: Vec<u16> = (0..n)
+    if unit_width == 0 {
+        return Err((unit_width, format!("min unit error!, unit_width: {}, number_of_blocks: {}, block_ratio: {}, space_ratio: {}",
+        unit_width, number_of_blocks, block_width_ratio, space_width_ratio)));
+    }
+
+    let left_margin = (100 - (unit_width * total_ratio)) / 2;
+    let right_margin = (100 - (unit_width * total_ratio)) - left_margin;
+
+    let block_width = (block_width_ratio * unit_width) as u16;
+    let space_width = (space_width_ratio * unit_width) as u16;
+
+    let vec: Vec<u16> = (0..number_of_blocks + 1)
         .into_iter()
         .map(|x| match x {
-            0 => vec![left_margin, block_width.into(), space_width.into()],
-            num if num < n - 1 && num > 0 => vec![block_width.into(), space_width.into()],
-            _ => vec![block_width.into(), right_margin],
+            0 => vec![left_margin as u16],
+            num if num <= number_of_blocks - 1 && num > 0 => vec![block_width, space_width],
+            _ => vec![block_width, right_margin as u16],
         })
         .flatten()
         .collect::<Vec<u16>>();
 
-    vec
+    Ok(vec)
 }
 
 pub fn calc_bridge_indexes(
