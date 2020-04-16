@@ -1,2 +1,2 @@
-merry, jane, rust
-ok, err, result
+merry, jane, rust, trait, future
+ok, err, result, impl, async

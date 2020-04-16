@@ -1,16 +1,18 @@
 use argh;
 mod helper;
 use helper::{
-    calc_next_index, calc_prev_index, create_simple_block, read_file, BorderKind, Cli, Event,
-    Events, LineDirection, LineWidget, Point, RenderingState,
+    calc_next_index, calc_prev_index, create_simple_block, get_input_from_file, BorderKind, Cli, Config,
+    Event, Events, LineDirection, LineWidget, Point, RenderingState,
 };
 use rand::Rng;
 use std::{
     collections::{HashMap, HashSet},
+    env,
     error::Error,
     io,
     iter::FromIterator,
-    thread, time,
+    process, thread,
+    time::Duration,
 };
 use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{
@@ -28,14 +30,13 @@ use tui::{
 // use Extend::extend;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let sadari_env = helper::read_args();
+
     // let cli: Cli = argh::from_env();
+    // eprintln!("real, cli is {}", cli.file_path);
     // mockup to focus on other things
     let cli: Cli = Cli::get_mockup();
-    println!("cli is {:?}", &cli);
-    read_file(&cli.get_path())
-        .expect(format!("can not read file in path {:?}", &cli.get_path()).as_str());
-    // read_args(env::args().collect());
-
+    eprintln!("cli is {:?}", &cli);
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
     // let stdout = MouseTerminal::from(stdout);
@@ -44,7 +45,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
 
-    let events = Events::new();
+    let events = Events::with_config(Config {
+        tick_rate: Duration::from_millis(cli.tick_rate),
+        ..Config::default()
+    });
 
     // let max number_blocks be 12!
     let number_of_blocks: u8 = 12;
