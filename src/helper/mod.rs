@@ -8,8 +8,9 @@ mod draw;
 pub use tools::{
     print_hashmap,
     // read_args,
-    read_file,
+    get_input_from_file,
     Cli,
+    *,
 };
 
 pub use calc::*;
