@@ -3,18 +3,15 @@ mod event;
 #[allow(dead_code)]
 mod tools;
 
+mod draw;
+
 pub use tools::{
-    create_simple_block,
     print_hashmap,
     // read_args,
     read_file,
-    BorderKind,
     Cli,
-    LineDirection,
-    LineWidget,
-    Point,
-    RenderingState,
 };
 
 pub use calc::*;
+pub use draw::*;
 pub use event::*;
