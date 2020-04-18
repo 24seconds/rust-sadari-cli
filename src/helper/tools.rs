@@ -70,7 +70,7 @@ pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Er
 }
 
 #[derive(Debug)]
-pub struct SadariEvnironment {
+pub struct SadariEnvironment {
     pub number_of_blocks: u8,
     pub number_of_max_bridges: u8,
     pub y_coordinate: u16,
@@ -79,9 +79,9 @@ pub struct SadariEvnironment {
     pub result_vec: Vec<String>,
 }
 
-impl SadariEvnironment {
-    pub fn default() -> SadariEvnironment {
-        SadariEvnironment {
+impl SadariEnvironment {
+    pub fn default() -> SadariEnvironment {
+        SadariEnvironment {
             number_of_blocks: 0,
             number_of_max_bridges: 6,
             y_coordinate: 10,
@@ -110,7 +110,7 @@ impl SadariEvnironment {
     }
 }
 
-impl Display for SadariEvnironment {
+impl Display for SadariEnvironment {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -157,7 +157,7 @@ where
         // check result inputs len and name inputs len is same as number of blocks that user have typed before
         // of course, quit option is provided
 
-        return SadariEvnironment::default();
+        return SadariEnvironment::default();
     }
 
     let filename = &args[1];
@@ -212,7 +212,7 @@ where
         );
     }
 
-    SadariEvnironment::default()
+    SadariEnvironment::default()
         .number_of_blocks(number_of_bloks as u8)
         .name_vec(name_vec)
         .result_vec(result_vec)
