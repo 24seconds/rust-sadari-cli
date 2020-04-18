@@ -9,7 +9,6 @@ pub use tools::{
     // read_args,
     get_input_from_file,
     print_hashmap,
-    Cli,
     *,
 };
 

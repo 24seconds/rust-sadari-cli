@@ -1,4 +1,3 @@
-use argh::FromArgs;
 use rand::rngs::ThreadRng;
 use std::{
     collections::HashMap,
@@ -13,39 +12,6 @@ use std::{
 const MAX_NUMBER_OF_BLOCKS: i32 = 12;
 const MIN_NUMBER_OF_BLOCKS: i32 = 2;
 const NUMBER_OF_LINES_TO_READ: i32 = 2;
-
-/// cli test
-/// TODO: Remove Cli struct. no longer needed
-#[derive(Debug, FromArgs)]
-pub struct Cli {
-    #[argh(option, default = "250")]
-    /// tick_rate
-    pub tick_rate: u64,
-
-    /// file path to read
-    #[argh(option)]
-    pub file_path: String,
-}
-
-impl Cli {
-    pub fn get_path(&self) -> &String {
-        &self.file_path
-    }
-
-    pub fn new(file_path: String) -> Cli {
-        Cli {
-            tick_rate: 250,
-            file_path,
-        }
-    }
-
-    pub fn get_mockup() -> Cli {
-        Cli {
-            tick_rate: 200,
-            file_path: String::from("text.txt"),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct SadariEnvironment {
