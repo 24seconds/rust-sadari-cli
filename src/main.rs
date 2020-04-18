@@ -49,6 +49,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let number_of_blocks: u8 = sadari_env.number_of_blocks;
     let number_of_max_bridges = sadari_env.number_of_max_bridges;
     let y_coordinate = sadari_env.y_coordinate;
+    let name_vec = sadari_env.name_vec;
+    let result_vec = sadari_env.result_vec;
 
     let mut rng = rand::thread_rng();
     let bridge_hashmap = helper::calc_bridge_hashmap(
@@ -92,12 +94,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let guide_chunk = chunks[0];
             let guide_chunk = Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints(
-                    [
-                        Constraint::Percentage(100),
-                    ]
-                    .as_ref(),
-                )
+                .constraints([Constraint::Percentage(100)].as_ref())
                 .horizontal_margin(10)
                 .vertical_margin(1)
                 .split(guide_chunk);
@@ -168,7 +165,7 @@ q           : Quit            r        : Go to result
             // f.render(&mut block, main_chunks[2]);
 
             let name_chunk = main_chunks[0];
-            let vec = helper::calc_names_layout(number_of_blocks, 2, 1).unwrap();
+            let vec = helper::calc_names_layout(number_of_blocks, 3, 1).unwrap();
 
             // render name_chunks
             let name_chunks = Layout::default()
@@ -189,6 +186,13 @@ q           : Quit            r        : Go to result
                     },
                 );
                 f.render(&mut block, name_chunks[i as usize * 2 + 1]);
+
+                // draw name texts
+                let text = [Text::raw(name_vec.get(i as usize).unwrap())];
+                let mut paragraph = Paragraph::new(text.iter())
+                    .alignment(Alignment::Center)
+                    .wrap(true);
+                f.render(&mut paragraph, block.inner(name_chunks[i as usize * 2 + 1]));
             }
 
             // render result_chunks
@@ -205,6 +209,16 @@ q           : Quit            r        : Go to result
             let mut block = create_simple_block(Borders::ALL, Color::White);
             for i in 0..number_of_blocks {
                 f.render(&mut block, result_chunks[i as usize * 2 + 1]);
+
+                // draw result texts
+                let text = [Text::raw(result_vec.get(i as usize).unwrap())];
+                let mut paragraph = Paragraph::new(text.iter())
+                    .alignment(Alignment::Center)
+                    .wrap(true);
+                f.render(
+                    &mut paragraph,
+                    block.inner(result_chunks[i as usize * 2 + 1]),
+                );
             }
 
             let mut bridge_point_hashmap: HashMap<Point, Point> = HashMap::new();
