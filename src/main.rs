@@ -1,30 +1,16 @@
-use argh;
 mod helper;
 use helper::{
-    calc_next_index, calc_prev_index, create_simple_block, get_input_from_file, BorderKind, Cli,
-    Config, Event, Events, LineDirection, LineWidget, Point, RenderingState,
+    calc_next_index, calc_prev_index, create_simple_block, BorderKind, Config, Event, Events,
+    LineDirection, LineWidget, Point, RenderingState,
 };
-use rand::Rng;
-use std::{
-    collections::{HashMap, HashSet},
-    env,
-    error::Error,
-    io,
-    iter::FromIterator,
-    process, thread,
-    time::Duration,
-};
-use termion::{event::Key, input::MouseTerminal, raw::IntoRawMode, screen::AlternateScreen};
+use std::{collections::HashMap, env, error::Error, io, time::Duration};
+use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{
     backend::TermionBackend,
-    buffer::Buffer,
-    layout::{Alignment, Constraint, Direction, Layout, Margin, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     symbols,
-    widgets::{
-        canvas::{Canvas, Line},
-        Block, Borders, Paragraph, Text, Widget,
-    },
+    widgets::{Block, Borders, Paragraph, Text},
     Terminal,
 };
 // use Extend::extend;
@@ -49,8 +35,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let number_of_blocks: u8 = sadari_env.number_of_blocks;
     let number_of_max_bridges = sadari_env.number_of_max_bridges;
     let y_coordinate = sadari_env.y_coordinate;
-    let name_vec = sadari_env.name_vec;
-    let result_vec = sadari_env.result_vec;
+    let name_vec = &sadari_env.name_vec;
+    let result_vec = &sadari_env.result_vec;
 
     let mut rng = rand::thread_rng();
     let bridge_hashmap = helper::calc_bridge_hashmap(
@@ -67,289 +53,53 @@ fn main() -> Result<(), Box<dyn Error>> {
         path_hashmap.insert(index, path);
     }
 
-    // helper::print_hashmap(String::from("bridge_hashmap"), &bridge_hashmap);
-    // helper::print_hashmap(String::from("path_hashmap"), &path_hashmap);
-
     let mut tick = 0;
     let tic_speed = 1;
+    let mut test_flag = false;
+
+    helper::print_hashmap("path_hashmap".to_string(), &path_hashmap);
 
     // prevent key event input while doing animation
     let mut rendering_state = RenderingState::Idle;
 
     loop {
-        terminal.draw(|mut f| {
-            let chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Percentage(15), // guide to user
-                        Constraint::Percentage(80), // main render
-                        Constraint::Percentage(5),
-                    ]
-                    .as_ref(),
-                )
-                .split(f.size());
+        // render result pages
+        // terminal.draw(|mut f| {
+        //     if test_flag {
+        //         return
+        //     }
 
-            // draw guide text
-            let guide_chunk = chunks[0];
-            let guide_chunk = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(100)].as_ref())
-                .horizontal_margin(10)
-                .vertical_margin(1)
-                .split(guide_chunk);
+        //     let size = f.size();
+        //     let chunks = Layout::default()
+        //         .direction(Direction::Vertical)
+        //         .margin(5)
+        //         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+        //         .split(size);
 
-            let text = [Text::raw(
-                r#"
-←, → or h,l : Left, Right     s, enter : Start path animation
-q           : Quit            r        : Go to result
-                "#,
-            )];
+        //         let text = [Text::raw("")];
 
-            let block = Block::default()
-                .borders(Borders::NONE)
-                .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Green))
-                .title("Rust-Sadari-Cli!");
+        //         let block = Block::default()
+        //             .borders(Borders::ALL)
+        //             .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Green))
+        //             .title("Sadari Reuslt");
 
-            let mut paragraph = Paragraph::new(text.iter())
-                .block(block)
-                .alignment(Alignment::Center);
-            f.render(&mut paragraph, guide_chunk[0]);
+        //         let mut paragraph = Paragraph::new(text.iter())
+        //             .block(block)
+        //             .alignment(Alignment::Center);
 
-            // draw footer
-            let footer_chunk = chunks[2];
-            let footer_chunk = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints(
-                    [
-                        Constraint::Percentage(100),
-                        // Constraint::Percentage(100),
-                    ]
-                    .as_ref(),
-                )
-                .horizontal_margin(10)
-                .split(footer_chunk);
+        //     f.render(&mut paragraph, size);
+        // })?;
 
-            let text = [Text::styled(
-                "\n\n🍺 Github: 24seconds/rust-sadari-cli, powered by 24seconds",
-                Style::default().fg(Color::Yellow),
-            )];
-            let mut paragraph = Paragraph::new(text.iter()).alignment(Alignment::Center);
-            f.render(&mut paragraph, footer_chunk[0]);
-
-            // main chunk part
-            let main_chunks = Layout::default()
-                .direction(Direction::Vertical)
-                .constraints(
-                    [
-                        Constraint::Percentage(10), // guide to user
-                        Constraint::Percentage(80), // main render
-                        Constraint::Percentage(10),
-                    ]
-                    .as_ref(),
-                )
-                .horizontal_margin(10)
-                .split(chunks[1]);
-
-            // let mut block = Block::default()
-            //     .borders(Borders::ALL)
-            //     .style(Style::default().bg(Color::Green));
-            // f.render(&mut block, main_chunks[0]);
-            // let mut block = Block::default()
-            //     .borders(Borders::ALL)
-            //     .style(Style::default());
-            // f.render(&mut block, main_chunks[1]);
-            // let mut block = Block::default()
-            //     .borders(Borders::ALL)
-            //     .style(Style::default().bg(Color::White));
-            // f.render(&mut block, main_chunks[2]);
-
-            let name_chunk = main_chunks[0];
-            let vec = helper::calc_names_layout(number_of_blocks, 3, 1).unwrap();
-
-            // render name_chunks
-            let name_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints(
-                    vec.iter()
-                        .map(|x| Constraint::Percentage(*x))
-                        .collect::<Vec<Constraint>>(),
-                )
-                .split(name_chunk);
-
-            for i in 0..number_of_blocks {
-                let mut block = create_simple_block(
-                    Borders::ALL,
-                    match i {
-                        _ if i == selected_chunk => BorderKind::Selected.color(),
-                        _ => BorderKind::NotSelected.color(),
-                    },
-                );
-                f.render(&mut block, name_chunks[i as usize * 2 + 1]);
-
-                // draw name texts
-                let text = [Text::raw(name_vec.get(i as usize).unwrap())];
-                let mut paragraph = Paragraph::new(text.iter())
-                    .alignment(Alignment::Center)
-                    .wrap(true);
-                f.render(&mut paragraph, block.inner(name_chunks[i as usize * 2 + 1]));
-            }
-
-            // render result_chunks
-            let result_chunk = main_chunks[2];
-            let result_chunks = Layout::default()
-                .direction(Direction::Horizontal)
-                .constraints(
-                    vec.iter()
-                        .map(|x| Constraint::Percentage(*x))
-                        .collect::<Vec<Constraint>>(),
-                )
-                .split(result_chunk);
-
-            let mut block = create_simple_block(Borders::ALL, Color::White);
-            for i in 0..number_of_blocks {
-                f.render(&mut block, result_chunks[i as usize * 2 + 1]);
-
-                // draw result texts
-                let text = [Text::raw(result_vec.get(i as usize).unwrap())];
-                let mut paragraph = Paragraph::new(text.iter())
-                    .alignment(Alignment::Center)
-                    .wrap(true);
-                f.render(
-                    &mut paragraph,
-                    block.inner(result_chunks[i as usize * 2 + 1]),
-                );
-            }
-
-            let mut bridge_point_hashmap: HashMap<Point, Point> = HashMap::new();
-
-            // render bridge vertical
-            let bridge_chunks: Vec<Rect> = name_chunks
-                .iter()
-                .zip(result_chunks.iter())
-                .map(|z| {
-                    let n = z.0;
-                    let r = z.1;
-                    Rect::new(
-                        n.x + n.width / 2,
-                        n.y + n.height,
-                        n.width / 2,
-                        r.y - (n.y + n.height),
-                    )
-                })
-                .collect();
-
-            let mut line = create_simple_block(Borders::LEFT, Color::LightBlue);
-            for i in 0..number_of_blocks {
-                f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
-
-                // collect bridge vertical points
-                let Rect {
-                    x,
-                    y,
-                    width: _,
-                    height,
-                } = bridge_chunks[i as usize * 2 + 1];
-
-                bridge_point_hashmap
-                    .insert(Point::new(i as i32, -1), Point::new(x as i32, y as i32 - 1));
-                bridge_point_hashmap.insert(
-                    Point::new(i as i32, y_coordinate as i32),
-                    Point::new(x as i32, (y + height) as i32),
-                );
-            }
-
-            // render bridge horizontal
-            for i in 0..(number_of_blocks - 1) {
-                let chunk_i = i as usize * 2 + 1;
-                let bridge_chunk = Rect::new(
-                    bridge_chunks[chunk_i].x + 1,
-                    bridge_chunks[chunk_i].y + 1,
-                    bridge_chunks[chunk_i + 2].x - bridge_chunks[chunk_i].x - 1,
-                    bridge_chunks[chunk_i].height - 2,
-                );
-
-                let vec_indexes: &Vec<u16> = bridge_hashmap.get(&(i as u16)).unwrap();
-                let bridge_chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints(
-                        helper::calc_distributed_height(y_coordinate + 1, bridge_chunk.height)
-                            .iter()
-                            .map(|x| Constraint::Length(*x))
-                            .collect::<Vec<Constraint>>(),
-                    )
-                    .split(bridge_chunk);
-
-                let mut bridge_horizontal = create_simple_block(Borders::BOTTOM, Color::Yellow);
-                vec_indexes.iter().for_each(|vec_index| {
-                    f.render(&mut bridge_horizontal, bridge_chunks[*vec_index as usize]);
-
-                    // collect bridge horizontal points
-                    let Rect {
-                        x,
-                        y,
-                        width,
-                        height,
-                    } = bridge_chunks[*vec_index as usize];
-
-                    bridge_point_hashmap.insert(
-                        Point::new(i as i32, *vec_index as i32),
-                        Point::new(x as i32 - 1, (y + height - 1) as i32),
-                    );
-                    bridge_point_hashmap.insert(
-                        Point::new(i as i32 + 1, *vec_index as i32),
-                        Point::new((x - 1 + width + 1) as i32, (y + height - 1) as i32),
-                    );
-                });
-            }
-
-            // draw animation
-            let path = path_hashmap.get(&selected_chunk).unwrap();
-            // helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
-
-            let mut current_path_index = 0;
-            let mut left_tick = tick;
-            while left_tick > 0 && current_path_index < path.len() as usize {
-                let (tick, area, direction, next_path_index) = helper::calc_partial_line(
-                    &bridge_point_hashmap,
-                    &path,
-                    left_tick,
-                    current_path_index as i32,
-                    selected_chunk,
-                );
-
-                left_tick = tick;
-                current_path_index = next_path_index as usize;
-
-                let mut line = match direction {
-                    LineDirection::Down => {
-                        LineWidget::default().border_style(Style::default().fg(Color::Red))
-                    }
-                    LineDirection::Right | LineDirection::Left => LineWidget::default()
-                        .border_style(Style::default().fg(Color::Red))
-                        .line_type(symbols::line::HORIZONTAL),
-                };
-
-                f.render(&mut line, area);
-            }
-
-            if current_path_index == path.len() {
-                // result chunk border should be red
-                let (result_index, _) = path.last().unwrap();
-
-                let mut block = create_simple_block(Borders::ALL, Color::Red);
-                f.render(&mut block, result_chunks[*result_index as usize * 2 + 1]);
-
-                rendering_state = RenderingState::Done;
-            }
-
-            match rendering_state {
-                RenderingState::Idle | RenderingState::Done => {}
-                RenderingState::Drawing => {
-                    tick += tic_speed;
-                }
-            };
-        })?;
+        helper::render_sadari(
+            &mut terminal,
+            &sadari_env,
+            selected_chunk,
+            &mut tick,
+            &mut rendering_state,
+            &bridge_hashmap,
+            &path_hashmap,
+        )
+        .unwrap();
 
         if rendering_state == RenderingState::Drawing {
             continue;
@@ -359,6 +109,9 @@ q           : Quit            r        : Go to result
             Event::Input(key) => match key {
                 Key::Char('q') | Key::Ctrl('c') => {
                     break;
+                }
+                Key::Char('r') => {
+                    test_flag = !test_flag;
                 }
                 val if [Key::Left, Key::Right, Key::Char('h'), Key::Char('l')].contains(&val) => {
                     match rendering_state {
