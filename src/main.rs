@@ -1,19 +1,8 @@
 mod helper;
-use helper::{
-    calc_next_index, calc_prev_index, create_simple_block, BorderKind, Config, Event, Events,
-    LineDirection, LineWidget, Point, RenderingState,
-};
+use helper::{calc_next_index, calc_prev_index, Config, Event, Events, RenderingState};
 use std::{collections::HashMap, env, error::Error, io, time::Duration};
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
-use tui::{
-    backend::TermionBackend,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    symbols,
-    widgets::{Block, Borders, Paragraph, Text},
-    Terminal,
-};
-// use Extend::extend;
+use tui::{backend::TermionBackend, Terminal};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let sadari_env = helper::read_args(env::args());
@@ -35,8 +24,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let number_of_blocks: u8 = sadari_env.number_of_blocks;
     let number_of_max_bridges = sadari_env.number_of_max_bridges;
     let y_coordinate = sadari_env.y_coordinate;
-    let name_vec = &sadari_env.name_vec;
-    let result_vec = &sadari_env.result_vec;
 
     let mut rng = rand::thread_rng();
     let bridge_hashmap = helper::calc_bridge_hashmap(
@@ -55,8 +42,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut tick = 0;
     let mut sadari_render_flag = true;
-
-    helper::print_hashmap("path_hashmap".to_string(), &path_hashmap);
 
     // prevent key event input while doing animation
     let mut rendering_state = RenderingState::Idle;

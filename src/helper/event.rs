@@ -19,9 +19,9 @@ pub enum Event<I> {
 /// type is handled in its own thread and returned to a common `Receiver`
 pub struct Events {
     rx: mpsc::Receiver<Event<Key>>,
-    input_handle: thread::JoinHandle<()>,
+    _input_handle: thread::JoinHandle<()>,
     ignore_exit_key: Arc<AtomicBool>,
-    tick_handle: thread::JoinHandle<()>,
+    _tick_handle: thread::JoinHandle<()>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -40,6 +40,7 @@ impl Default for Config {
 }
 
 impl Events {
+    #[allow(dead_code)]
     pub fn new() -> Events {
         Events::with_config(Config::default())
     }
@@ -80,8 +81,8 @@ impl Events {
         Events {
             rx,
             ignore_exit_key,
-            input_handle,
-            tick_handle,
+            _input_handle: input_handle,
+            _tick_handle: tick_handle,
         }
     }
 
@@ -89,10 +90,12 @@ impl Events {
         self.rx.recv()
     }
 
+    #[allow(dead_code)]
     pub fn disable_exit_key(&mut self) {
         self.ignore_exit_key.store(true, Ordering::Relaxed);
     }
 
+    #[allow(dead_code)]
     pub fn enable_exit_key(&mut self) {
         self.ignore_exit_key.store(false, Ordering::Relaxed);
     }

@@ -36,13 +36,6 @@ pub enum BorderKind {
     NotSelected,
 }
 
-struct Line {
-    x_i: u32,
-    y_i: u32,
-    x_f: u32,
-    y_f: u32,
-}
-
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point {
     pub x: i32,
@@ -54,7 +47,11 @@ impl Point {
         Point { x: 0, y: 0 }
     }
     pub fn new(x: i32, y: i32) -> Self {
-        Point { x, y }
+        let mut point = Point::default();
+        point.x = x;
+        point.y = y;
+
+        point
     }
 }
 
@@ -157,6 +154,7 @@ impl<'a> Label<'a> {
     }
 }
 
+#[allow(dead_code)]
 pub fn draw_bridge_point<B>(point_hashmap: &HashMap<Point, Point>, f: &mut Frame<B>)
 where
     B: Backend,
@@ -502,7 +500,7 @@ where
 
         let mut label = Label::default()
             .text("Sadari Result")
-            .text_style(Style::default().fg(Color::Green));
+            .text_style(Style::default().modifier(Modifier::BOLD).fg(Color::Green));
         f.render(&mut label, chunks[0]);
 
         let vec_start_text: Vec<Text> = vec_text
