@@ -427,30 +427,30 @@ pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Er
 pub fn read_args_from_file(args: Vec<String>) -> SadariEnvironment {
     let filename = &args[1];
     let vec_read_file = get_input_from_file(filename).unwrap_or_else(|err| {
-        panic!("get_input_from_file error : {}", err);
+        panic!("\n\tget_input_from_file error : {}", err);
     });
 
     if vec_read_file.len() < 1 {
-        panic!("test input file has few lines, provide 2 lines!");
+        panic!("\n\ttest input file has few lines, provide 2 lines!");
     }
 
     let name_vec: &Vec<String> = vec_read_file
         .get(0)
         .ok_or_else(|| "no input for names")
         .unwrap_or_else(|err| {
-            panic!("name_vec, test error : {}", err);
+            panic!("\n\tname_vec, test error : {}", err);
         });
 
     let number_of_bloks = name_vec.len();
     if number_of_bloks > MAX_NUMBER_OF_BLOCKS as usize {
         panic!(
-            "name_vec length is larger than limit, length: {}, limit {}",
+            "\n\tname_vec length is larger than limit, length: {}, limit {}",
             number_of_bloks, MAX_NUMBER_OF_BLOCKS
         );
     }
     if number_of_bloks < MIN_NUMBER_OF_BLOCKS as usize {
         panic!(
-            "name_vec length is smaller than limit, length: {}, limit {}",
+            "\n\tname_vec length is smaller than limit, length: {}, limit {}",
             number_of_bloks, MIN_NUMBER_OF_BLOCKS
         );
     }
@@ -473,7 +473,7 @@ pub fn read_args_from_file(args: Vec<String>) -> SadariEnvironment {
 
     if name_vec.len() != result_vec.len() {
         panic!(
-            "name and result length are different name: {}, result: {}",
+            "\n\tname and result length are different name: {}, result: {}",
             name_vec.len(),
             result_vec.len()
         );
