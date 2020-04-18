@@ -54,8 +54,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let mut tick = 0;
-    let tic_speed = 1;
-    let mut test_flag = false;
+    let mut sadari_render_flag = true;
 
     helper::print_hashmap("path_hashmap".to_string(), &path_hashmap);
 
@@ -63,43 +62,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut rendering_state = RenderingState::Idle;
 
     loop {
-        // render result pages
-        // terminal.draw(|mut f| {
-        //     if test_flag {
-        //         return
-        //     }
-
-        //     let size = f.size();
-        //     let chunks = Layout::default()
-        //         .direction(Direction::Vertical)
-        //         .margin(5)
-        //         .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
-        //         .split(size);
-
-        //         let text = [Text::raw("")];
-
-        //         let block = Block::default()
-        //             .borders(Borders::ALL)
-        //             .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Green))
-        //             .title("Sadari Reuslt");
-
-        //         let mut paragraph = Paragraph::new(text.iter())
-        //             .block(block)
-        //             .alignment(Alignment::Center);
-
-        //     f.render(&mut paragraph, size);
-        // })?;
-
-        helper::render_sadari(
-            &mut terminal,
-            &sadari_env,
-            selected_chunk,
-            &mut tick,
-            &mut rendering_state,
-            &bridge_hashmap,
-            &path_hashmap,
-        )
-        .unwrap();
+        if !sadari_render_flag {
+            // render result pages
+            helper::render_result(&mut terminal, &sadari_env, &path_hashmap)?;
+        } else {
+            helper::render_sadari(
+                &mut terminal,
+                &sadari_env,
+                selected_chunk,
+                &mut tick,
+                &mut rendering_state,
+                &bridge_hashmap,
+                &path_hashmap,
+            )?;
+        }
 
         if rendering_state == RenderingState::Drawing {
             continue;
@@ -111,7 +87,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     break;
                 }
                 Key::Char('r') => {
-                    test_flag = !test_flag;
+                    sadari_render_flag = !sadari_render_flag;
                 }
                 val if [Key::Left, Key::Right, Key::Char('h'), Key::Char('l')].contains(&val) => {
                     match rendering_state {

@@ -124,6 +124,39 @@ impl<'a> Widget for LineWidget<'a> {
     }
 }
 
+struct Label<'a> {
+    text: &'a str,
+    text_style: Style,
+}
+
+impl<'a> Default for Label<'a> {
+    fn default() -> Label<'a> {
+        Label {
+            text: "",
+            text_style: Style::default(),
+        }
+    }
+}
+
+impl<'a> Widget for Label<'a> {
+    fn draw(&mut self, area: Rect, buf: &mut Buffer) {
+        buf.set_string(area.left(), area.top(), self.text, self.text_style);
+    }
+}
+
+impl<'a> Label<'a> {
+    fn text(mut self, text: &'a str) -> Label<'a> {
+        self.text = text;
+        self
+    }
+
+    fn text_style(mut self, style: Style) -> Self {
+        self.text_style = style;
+
+        self
+    }
+}
+
 pub fn draw_bridge_point<B>(point_hashmap: &HashMap<Point, Point>, f: &mut Frame<B>)
 where
     B: Backend,
@@ -181,7 +214,7 @@ where
         let text = [Text::raw(
             r#"
 ←, → or h,l : Left, Right     s, enter : Start path animation
-q           : Quit            r        : Go to result
+q           : Quit            r        : Go to result        
             "#,
         )];
 
@@ -415,6 +448,91 @@ q           : Quit            r        : Go to result
                 *tick += tic_speed;
             }
         };
+    })?;
+
+    Ok(())
+}
+
+pub fn render_result<B>(
+    terminal: &mut Terminal<B>,
+    sadari_env: &SadariEnvironment,
+    path_hashmap: &HashMap<u8, Vec<(u8, u8)>>,
+) -> Result<(), Box<dyn Error>>
+where
+    B: Backend,
+{
+    terminal.draw(|mut f| {
+        let size = f.size();
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(5)
+            .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+            .split(size);
+
+        let length = path_hashmap.len() as u8;
+
+        let vec_text: Vec<(&String, &String)> = (0..length)
+            .into_iter()
+            .map(|i| {
+                let path = path_hashmap.get(&i).unwrap();
+                let start = path.first().unwrap();
+                let end = path.last().unwrap();
+
+                let start = start.0;
+                let end = end.0;
+
+                let start = sadari_env.name_vec.get(start as usize).unwrap();
+                let end = sadari_env.result_vec.get(end as usize).unwrap();
+
+                (start, end)
+            })
+            .collect();
+
+        let main_chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(
+                [
+                    Constraint::Percentage(45),
+                    Constraint::Length(20),
+                    Constraint::Percentage(45),
+                ]
+                .as_ref(),
+            )
+            .split(chunks[1]);
+
+        let mut label = Label::default()
+            .text("Sadari Result")
+            .text_style(Style::default().fg(Color::Green));
+        f.render(&mut label, chunks[0]);
+
+        let vec_start_text: Vec<Text> = vec_text
+            .iter()
+            .map(|x| {
+                let (start, _) = *x;
+
+                Text::raw(format!("{}\n\n", start))
+            })
+            .collect();
+        let mut paragraph = Paragraph::new(vec_start_text.iter()).alignment(Alignment::Right);
+        f.render(&mut paragraph, main_chunks[0]);
+
+        let vec_line: Vec<Text> = (0..length)
+            .into_iter()
+            .map(|_| Text::raw("<───────────>\n\n"))
+            .collect();
+        let mut paragraph = Paragraph::new(vec_line.iter()).alignment(Alignment::Center);
+        f.render(&mut paragraph, main_chunks[1]);
+
+        let vec_end_text: Vec<Text> = vec_text
+            .iter()
+            .map(|x| {
+                let (_, end) = *x;
+
+                Text::raw(format!("{}\n\n", end))
+            })
+            .collect();
+        let mut paragraph = Paragraph::new(vec_end_text.iter()).alignment(Alignment::Left);
+        f.render(&mut paragraph, main_chunks[2]);
     })?;
 
     Ok(())
