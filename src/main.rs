@@ -349,15 +349,6 @@ q           : Quit            r        : Go to result
                     tick += tic_speed;
                 }
             };
-
-            // render all points for debug
-            // for (_, value) in bridge_point_hashmap {
-            //     let mut point = Block::default()
-            //         .borders(Borders::TOP)
-            //         .border_style(Style::default().fg(Color::Red));
-
-            //     f.render(&mut point, Rect::new(value.x as u16, value.y as u16, 2, 2));
-            // }
         })?;
 
         if rendering_state == RenderingState::Drawing {

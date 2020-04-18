@@ -1,10 +1,12 @@
-use std::fmt;
+use std::{collections::HashMap, fmt};
 use tui::{
+    backend::{Backend, TermionBackend},
     buffer::Buffer,
     layout::Rect,
     style::{Color, Style},
     symbols::line,
     widgets::{Block, Borders, Widget},
+    Frame,
 };
 
 pub fn create_simple_block<'a>(borders: Borders, color: Color) -> Block<'a> {
@@ -116,5 +118,18 @@ impl<'a> Widget for LineWidget<'a> {
             }
             _ => {}
         }
+    }
+}
+
+pub fn draw_bridge_point<B>(point_hashmap: &HashMap<Point, Point>, f: &mut Frame<B>)
+where
+    B: Backend,
+{
+    for (_, value) in point_hashmap {
+        let mut point = Block::default()
+            .borders(Borders::TOP)
+            .border_style(Style::default().fg(Color::Red));
+
+        f.render(&mut point, Rect::new(value.x as u16, value.y as u16, 2, 2));
     }
 }
