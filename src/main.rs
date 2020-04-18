@@ -1,8 +1,8 @@
 use argh;
 mod helper;
 use helper::{
-    calc_next_index, calc_prev_index, create_simple_block, get_input_from_file, BorderKind, Cli, Config,
-    Event, Events, LineDirection, LineWidget, Point, RenderingState,
+    calc_next_index, calc_prev_index, create_simple_block, get_input_from_file, BorderKind, Cli,
+    Config, Event, Events, LineDirection, LineWidget, Point, RenderingState,
 };
 use rand::Rng;
 use std::{
@@ -30,7 +30,8 @@ use tui::{
 // use Extend::extend;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let sadari_env = helper::read_args();
+    let sadari_env = helper::read_args(env::args());
+
 
     // let cli: Cli = argh::from_env();
     // eprintln!("real, cli is {}", cli.file_path);

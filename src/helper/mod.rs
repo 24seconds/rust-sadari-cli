@@ -6,9 +6,9 @@ mod tools;
 mod draw;
 
 pub use tools::{
-    print_hashmap,
     // read_args,
     get_input_from_file,
+    print_hashmap,
     Cli,
     *,
 };

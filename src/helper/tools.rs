@@ -2,7 +2,7 @@ use argh::FromArgs;
 use rand::rngs::ThreadRng;
 use std::{
     collections::HashMap,
-    env,
+    fmt,
     fmt::{Debug, Display},
     fs::File,
     io,
@@ -11,6 +11,7 @@ use std::{
 };
 
 const MAX_NUMBER_OF_BLOCKS: i32 = 12;
+const MIN_NUMBER_OF_BLOCKS: i32 = 2;
 
 /// cli test
 /// TODO: Remove Cli struct. no longer needed
@@ -68,13 +69,14 @@ pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Er
     Ok(vec)
 }
 
+#[derive(Debug)]
 pub struct SadariEvnironment {
-    number_of_blocks: u8,
-    number_of_max_bridges: u8,
-    y_coordinate: u16,
-    rng: ThreadRng,
-    name_vec: Vec<String>,
-    result_vec: Vec<String>,
+    pub number_of_blocks: u8,
+    pub number_of_max_bridges: u8,
+    pub y_coordinate: u16,
+    pub rng: ThreadRng,
+    pub name_vec: Vec<String>,
+    pub result_vec: Vec<String>,
 }
 
 impl SadariEvnironment {
@@ -108,6 +110,25 @@ impl SadariEvnironment {
     }
 }
 
+impl Display for SadariEvnironment {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "
+        sadari env, block : {}, \
+        max_bridges : {}, \
+        y_coordinate : {}, \
+        \nname_vec : {:?}, \
+        \nresult_vec : {:?}",
+            self.number_of_blocks,
+            self.number_of_max_bridges,
+            self.y_coordinate,
+            self.name_vec,
+            self.result_vec
+        )
+    }
+}
+
 struct SadariData {
     selected_chunk: u8,
     bridge_hashmap: HashMap<u16, Vec<u16>>,
@@ -116,8 +137,11 @@ struct SadariData {
     tick_speed: i32,
 }
 
-pub fn read_args() -> SadariEvnironment {
-    let args: Vec<String> = env::args().collect();
+pub fn read_args<T>(args: T) -> SadariEvnironment
+where
+    T: Iterator<Item = String>,
+{
+    let args: Vec<String> = args.collect();
 
     if args.len() < 2 {
         // direct input mode
@@ -138,28 +162,32 @@ pub fn read_args() -> SadariEvnironment {
 
     let filename = &args[1];
     let vec_read_file = get_input_from_file(filename).unwrap_or_else(|err| {
-        eprintln!("test error : {}", err);
-        // print error message and exit early (process exit)
-        process::exit(1)
+        panic!("get_input_from_file error : {}", err);
     });
 
     if vec_read_file.len() < 1 {
-        eprint!("test input file has few lines, provide 2 lines!");
-        process::exit(1);
+        panic!("test input file has few lines, provide 2 lines!");
     }
 
     let name_vec: &Vec<String> = vec_read_file
         .get(0)
         .ok_or_else(|| "no input for names")
         .unwrap_or_else(|err| {
-            eprintln!("name_vec, test error : {}", err);
-            process::exit(1)
+            panic!("name_vec, test error : {}", err);
         });
 
     let number_of_bloks = name_vec.len();
     if number_of_bloks > MAX_NUMBER_OF_BLOCKS as usize {
-        eprintln!("name_vec max_number_of_blocks");
-        process::exit(1)
+        panic!(
+            "name_vec length is larger than limit, length: {}, limit {}",
+            number_of_bloks, MAX_NUMBER_OF_BLOCKS
+        );
+    }
+    if number_of_bloks < MIN_NUMBER_OF_BLOCKS as usize {
+        panic!(
+            "name_vec length is smaller than limit, length: {}, limit {}",
+            number_of_bloks, MIN_NUMBER_OF_BLOCKS
+        );
     }
 
     let name_vec = name_vec.clone();
@@ -174,6 +202,15 @@ pub fn read_args() -> SadariEvnironment {
     } else {
         vec_read_file.get(1).unwrap().clone()
     };
+
+
+    if name_vec.len() != result_vec.len() {
+        panic!(
+            "name and result length are different name: {}, result: {}",
+            name_vec.len(),
+            result_vec.len()
+        );
+    }
 
     SadariEvnironment::default()
         .number_of_blocks(number_of_bloks as u8)
