@@ -12,6 +12,7 @@ use std::{
 
 const MAX_NUMBER_OF_BLOCKS: i32 = 12;
 const MIN_NUMBER_OF_BLOCKS: i32 = 2;
+const NUMBER_OF_LINES_TO_READ: i32 = 2;
 
 /// cli test
 /// TODO: Remove Cli struct. no longer needed
@@ -44,29 +45,6 @@ impl Cli {
             file_path: String::from("text.txt"),
         }
     }
-}
-
-pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Error> {
-    let file = File::open(filename)?;
-    let reader = std::io::BufReader::new(&file);
-
-    let mut vec: Vec<Vec<String>> = Vec::new();
-    let mut line_iter = reader.lines();
-
-    (0..2).into_iter().for_each(|_| {
-        let line = line_iter.next();
-
-        match line {
-            Some(l) => {
-                let s: String = l.unwrap();
-                let v: Vec<String> = s.split(",").map(move |x| String::from(x.trim())).collect();
-                vec.push(v);
-            }
-            None => {}
-        };
-    });
-
-    Ok(vec)
 }
 
 #[derive(Debug)]
@@ -137,29 +115,314 @@ struct SadariData {
     tick_speed: i32,
 }
 
-pub fn read_args<T>(args: T) -> SadariEvnironment
-where
-    T: Iterator<Item = String>,
-{
-    let args: Vec<String> = args.collect();
+mod interaction {
+    use super::{SadariEnvironment, MAX_NUMBER_OF_BLOCKS, MIN_NUMBER_OF_BLOCKS};
+    use std::io;
+    use std::io::prelude::*;
 
-    if args.len() < 2 {
-        // direct input mode
-
-        // function name would be `ask_action`
-
-        // input scenario
-
-        // 1. ask number of blocks first
-        // depend on number of blocks, reject or proceed
-        // 2. get name inputs in one line, separated by comma
-        // 3. get result inputs or offer skip.
-        // check result inputs len and name inputs len is same as number of blocks that user have typed before
-        // of course, quit option is provided
-
-        return SadariEnvironment::default();
+    pub enum State {
+        Idle,
+        NameInput,
+        ResultInput,
+        BeforeDone,
+        Done,
+        Quit,
     }
 
+    impl State {
+        fn next_state(self) -> State {
+            match self {
+                State::Idle => State::NameInput,
+                State::NameInput => State::ResultInput,
+                State::ResultInput => State::BeforeDone,
+                State::BeforeDone => State::Done,
+                _ => self,
+            }
+        }
+
+        fn previous_state(self) -> State {
+            match self {
+                State::NameInput => State::Idle,
+                State::ResultInput => State::NameInput,
+                State::BeforeDone => State::ResultInput,
+                _ => self,
+            }
+        }
+    }
+
+    pub fn idle_guide() {
+        println!("\tType list of names separated by comma! ex) name1, name2, name3 ...\n");
+        println!("\tQ,q) Quit\n");
+        print!("type: ");
+
+        io::stdout().flush().unwrap();
+    }
+
+    pub fn name_input_guide(v: &Vec<String>) {
+        println!("\tIs that right? \n\tnames: {:?}, len: {}\n", v, v.len());
+        println!("\tY, y) yes");
+        println!("\tN, n) no");
+        println!("\tQ,q) Quit\n");
+        print!("type: ");
+        io::stdout().flush().unwrap();
+    }
+
+    pub fn result_input_guide() {
+        println!("\tType list of results separated by comma! ex) result1, result2, result3 ...");
+        println!("\tR, r) If you want auto generated results");
+        println!("\tQ,q) Quit\n");
+        print!("type: ");
+        io::stdout().flush().unwrap();
+    }
+
+    pub fn before_done_guide(sadari_env: &SadariEnvironment) {
+        println!(
+            "\tIs that right? \n\tname: {:?}, len: {}",
+            sadari_env.name_vec,
+            sadari_env.name_vec.len()
+        );
+        println!(
+            "\tresult: {:?}, len: {}\n",
+            sadari_env.result_vec,
+            sadari_env.result_vec.len()
+        );
+        println!("\tY, y) yes");
+        println!("\tN, n) no");
+        println!("\tQ,q) Quit\n");
+        print!("type: ");
+        io::stdout().flush().unwrap();
+    }
+
+    pub fn handle_state_guide(state: &State, sadari_env: &SadariEnvironment) {
+        match state {
+            State::Idle => idle_guide(),
+            State::NameInput => name_input_guide(&sadari_env.name_vec),
+            State::ResultInput => result_input_guide(),
+            State::BeforeDone => before_done_guide(&sadari_env),
+            _ => {}
+        };
+    }
+
+    pub fn handle_user_input(
+        action: String,
+        state: State,
+        sadari_env: SadariEnvironment,
+    ) -> (SadariEnvironment, State) {
+        let action = action.trim();
+
+        let mut next_sadari_env = sadari_env;
+
+        match action {
+            "Q" | "q" => (next_sadari_env, State::Quit),
+            "Y" | "y" => {
+                let (is_valid, message) = validate_input(&state, &next_sadari_env);
+
+                match message {
+                    Some(m) => println!("{}", m),
+                    None => {}
+                };
+
+                let next_state = match state {
+                    State::NameInput => {
+                        if is_valid {
+                            state.next_state()
+                        } else {
+                            state
+                        }
+                    }
+                    State::BeforeDone => {
+                        if is_valid {
+                            state.next_state()
+                        } else {
+                            state.previous_state()
+                        }
+                    }
+                    _ => state,
+                };
+
+                (next_sadari_env, next_state)
+            }
+            "N" | "n" => {
+                let next_state = match state {
+                    State::NameInput => {
+                        next_sadari_env = next_sadari_env.name_vec(Vec::new()).number_of_blocks(0);
+
+                        state.previous_state()
+                    }
+                    State::BeforeDone => {
+                        next_sadari_env = next_sadari_env.result_vec(Vec::new());
+
+                        state.previous_state()
+                    }
+                    _ => state,
+                };
+
+                (next_sadari_env, next_state)
+            }
+            "R" | "r" => {
+                let next_state = match state {
+                    State::ResultInput => {
+                        let vec: Vec<String> = (0..next_sadari_env.number_of_blocks as u8)
+                            .into_iter()
+                            .map(|x| x.to_string())
+                            .collect();
+
+                        next_sadari_env = next_sadari_env.result_vec(vec);
+
+                        state.next_state()
+                    }
+                    _ => state,
+                };
+
+                (next_sadari_env, next_state)
+            }
+            _ => {
+                let vec: Vec<String> = action
+                    .split(",")
+                    .map(move |x| String::from(x.trim()))
+                    .collect();
+
+                let next_state = match state {
+                    State::Idle => {
+                        next_sadari_env = next_sadari_env
+                            .number_of_blocks(vec.len() as u8)
+                            .name_vec(vec);
+
+                        state.next_state()
+                    }
+                    State::ResultInput => {
+                        next_sadari_env = next_sadari_env.result_vec(vec);
+
+                        let (is_valid, message) = validate_input(&state, &next_sadari_env);
+
+                        match message {
+                            Some(m) => println!("{}", m),
+                            None => {}
+                        };
+
+                        if is_valid {
+                            state.next_state()
+                        } else {
+                            next_sadari_env = next_sadari_env.result_vec(Vec::new());
+
+                            state
+                        }
+                    }
+                    _ => state,
+                };
+
+                (next_sadari_env, next_state)
+            }
+        }
+    }
+
+    pub fn validate_input(state: &State, sadari_env: &SadariEnvironment) -> (bool, Option<String>) {
+        match state {
+            State::NameInput => {
+                let len = sadari_env.name_vec.len();
+
+                if len >= MIN_NUMBER_OF_BLOCKS as usize && len <= MAX_NUMBER_OF_BLOCKS as usize {
+                    (true, None)
+                } else {
+                    (
+                        false,
+                        Some(format!(
+                            "\n\tInput length should be {} <= input_length <= {}\n",
+                            MIN_NUMBER_OF_BLOCKS, MAX_NUMBER_OF_BLOCKS
+                        )),
+                    )
+                }
+            }
+            State::BeforeDone | State::ResultInput => {
+                let name_vec_len = sadari_env.name_vec.len();
+                let result_vec_len = sadari_env.result_vec.len();
+
+                if name_vec_len != result_vec_len {
+                    return (
+                        false,
+                        Some(format!(
+                            "\n\tLengths are different! name: {}, result: {}\n",
+                            name_vec_len, result_vec_len
+                        )),
+                    );
+                }
+
+                if result_vec_len >= MIN_NUMBER_OF_BLOCKS as usize
+                    && result_vec_len <= MAX_NUMBER_OF_BLOCKS as usize
+                {
+                    (true, None)
+                } else {
+                    (
+                        false,
+                        Some(format!(
+                            "\n\tInput length should be {} <= input_length <= {}\n",
+                            MIN_NUMBER_OF_BLOCKS, MAX_NUMBER_OF_BLOCKS
+                        )),
+                    )
+                }
+            }
+            _ => (false, None),
+        }
+    }
+}
+
+pub fn read_args_from_stdin() -> SadariEnvironment {
+    let mut sadari_env = SadariEnvironment::default();
+    let mut state = interaction::State::Idle;
+
+    loop {
+        interaction::handle_state_guide(&state, &sadari_env);
+
+        let mut action = String::new();
+        io::stdin().read_line(&mut action).expect("read error");
+
+        // println!("\naction is {}\n", action);
+
+        let (next_sadari_env, next_state) =
+            interaction::handle_user_input(action, state, sadari_env);
+        state = next_state;
+        sadari_env = next_sadari_env;
+
+        match state {
+            interaction::State::Quit => {
+                process::exit(0);
+            }
+            interaction::State::Done => {
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    println!("stdin, sadari_env is {:?}", &sadari_env);
+
+    sadari_env
+}
+
+pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Error> {
+    let file = File::open(filename)?;
+    let reader = std::io::BufReader::new(&file);
+
+    let mut vec: Vec<Vec<String>> = Vec::new();
+    let mut line_iter = reader.lines();
+
+    (0..NUMBER_OF_LINES_TO_READ).into_iter().for_each(|_| {
+        let line = line_iter.next();
+
+        match line {
+            Some(l) => {
+                let s: String = l.unwrap();
+                let v: Vec<String> = s.split(",").map(move |x| String::from(x.trim())).collect();
+                vec.push(v);
+            }
+            None => {}
+        };
+    });
+
+    Ok(vec)
+}
+
+pub fn read_args_from_file(args: Vec<String>) -> SadariEnvironment {
     let filename = &args[1];
     let vec_read_file = get_input_from_file(filename).unwrap_or_else(|err| {
         panic!("get_input_from_file error : {}", err);
@@ -203,6 +466,8 @@ where
         vec_read_file.get(1).unwrap().clone()
     };
 
+    eprintln!("name_vec is {:?}", name_vec);
+    eprintln!("result_vec is {:?}", result_vec);
 
     if name_vec.len() != result_vec.len() {
         panic!(
@@ -216,6 +481,33 @@ where
         .number_of_blocks(number_of_bloks as u8)
         .name_vec(name_vec)
         .result_vec(result_vec)
+}
+
+pub fn read_args<T>(args: T) -> SadariEnvironment
+where
+    T: Iterator<Item = String>,
+{
+    let args: Vec<String> = args.collect();
+
+    eprintln!("args is {:?}", args);
+    if args.len() < 2 {
+        // direct input mode
+
+        // function name would be `ask_action`
+
+        // input scenario
+
+        // 1. ask number of blocks first
+        // depend on number of blocks, reject or proceed
+        // 2. get name inputs in one line, separated by comma
+        // 3. get result inputs or offer skip.
+        // check result inputs len and name inputs len is same as number of blocks that user have typed before
+        // of course, quit option is provided
+
+        return SadariEnvironment::default();
+    }
+
+    read_args_from_file(args)
 }
 
 pub fn print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
