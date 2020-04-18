@@ -32,12 +32,7 @@ use tui::{
 fn main() -> Result<(), Box<dyn Error>> {
     let sadari_env = helper::read_args(env::args());
 
-
-    // let cli: Cli = argh::from_env();
-    // eprintln!("real, cli is {}", cli.file_path);
-    // mockup to focus on other things
-    let cli: Cli = Cli::get_mockup();
-    eprintln!("cli is {:?}", &cli);
+    eprintln!("sadari_env is {:?}", sadari_env);
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
     // let stdout = MouseTerminal::from(stdout);
@@ -47,14 +42,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.hide_cursor()?;
 
     let events = Events::with_config(Config {
-        tick_rate: Duration::from_millis(cli.tick_rate),
+        tick_rate: Duration::from_millis(sadari_env.tick_rate),
         ..Config::default()
     });
 
-    // let max number_blocks be 12!
-    let number_of_blocks: u8 = 12;
-    let number_of_max_bridges = 6;
-    let y_coordinate = 10;
+    let number_of_blocks: u8 = sadari_env.number_of_blocks;
+    let number_of_max_bridges = sadari_env.number_of_max_bridges;
+    let y_coordinate = sadari_env.y_coordinate;
 
     let mut rng = rand::thread_rng();
     let bridge_hashmap = helper::calc_bridge_hashmap(
@@ -100,9 +94,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .direction(Direction::Horizontal)
                 .constraints(
                     [
-                        Constraint::Percentage(33),
-                        Constraint::Percentage(34),
-                        Constraint::Percentage(33),
+                        Constraint::Percentage(100),
                     ]
                     .as_ref(),
                 )
@@ -119,12 +111,13 @@ q           : Quit            r        : Go to result
 
             let block = Block::default()
                 .borders(Borders::NONE)
-                .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Blue))
+                .title_style(Style::default().modifier(Modifier::BOLD).fg(Color::Green))
                 .title("Rust-Sadari-Cli!");
+
             let mut paragraph = Paragraph::new(text.iter())
                 .block(block)
-                .alignment(Alignment::Left);
-            f.render(&mut paragraph, guide_chunk[1]);
+                .alignment(Alignment::Center);
+            f.render(&mut paragraph, guide_chunk[0]);
 
             // draw footer
             let footer_chunk = chunks[2];

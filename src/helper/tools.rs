@@ -55,6 +55,7 @@ pub struct SadariEnvironment {
     pub rng: ThreadRng,
     pub name_vec: Vec<String>,
     pub result_vec: Vec<String>,
+    pub tick_rate: u64,
 }
 
 impl SadariEnvironment {
@@ -66,6 +67,7 @@ impl SadariEnvironment {
             rng: rand::thread_rng(),
             name_vec: Vec::new(),
             result_vec: Vec::new(),
+            tick_rate: 250,
         }
     }
 
@@ -490,24 +492,12 @@ where
     let args: Vec<String> = args.collect();
 
     eprintln!("args is {:?}", args);
+
     if args.len() < 2 {
-        // direct input mode
-
-        // function name would be `ask_action`
-
-        // input scenario
-
-        // 1. ask number of blocks first
-        // depend on number of blocks, reject or proceed
-        // 2. get name inputs in one line, separated by comma
-        // 3. get result inputs or offer skip.
-        // check result inputs len and name inputs len is same as number of blocks that user have typed before
-        // of course, quit option is provided
-
-        return SadariEnvironment::default();
+        read_args_from_stdin()
+    } else {
+        read_args_from_file(args)
     }
-
-    read_args_from_file(args)
 }
 
 pub fn print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
