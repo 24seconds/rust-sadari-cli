@@ -71,13 +71,13 @@ impl BorderKind {
 }
 
 #[derive(Clone, Copy)]
-struct LineWidget<'a> {
+struct LineWidget {
     border_style: Style,
-    line_type: &'a str,
+    line_type: &'static str,
 }
 
-impl<'a> LineWidget<'a> {
-    pub fn new(border_style: Style, line_type: &'a str) -> Self {
+impl LineWidget {
+    pub fn new(border_style: Style, line_type: &'static str) -> Self {
         Self {
             border_style,
             line_type,
@@ -85,7 +85,7 @@ impl<'a> LineWidget<'a> {
     }
 }
 
-impl<'a> Widget for LineWidget<'a> {
+impl Widget for LineWidget {
     fn draw(&mut self, area: Rect, buf: &mut Buffer) {
         buf.set_string(area.left(), area.top(), self.line_type, Style::default());
 
