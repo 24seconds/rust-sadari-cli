@@ -71,33 +71,21 @@ impl BorderKind {
 }
 
 #[derive(Clone, Copy)]
-pub struct LineWidget<'a> {
-    line_type: &'a str,
+struct LineWidget {
     border_style: Style,
+    line_type: &'static str,
 }
 
-impl<'a> Default for LineWidget<'a> {
-    fn default() -> LineWidget<'a> {
-        LineWidget {
-            line_type: line::VERTICAL,
-            border_style: Style::default(),
+impl LineWidget {
+    pub fn new(border_style: Style, line_type: &'static str) -> Self {
+        Self {
+            border_style,
+            line_type,
         }
     }
 }
 
-impl<'a> LineWidget<'a> {
-    pub fn border_style(mut self, style: Style) -> LineWidget<'a> {
-        self.border_style = style;
-        self
-    }
-
-    pub fn line_type(mut self, line_type: &'a str) -> LineWidget<'a> {
-        self.line_type = line_type;
-        self
-    }
-}
-
-impl<'a> Widget for LineWidget<'a> {
+impl Widget for LineWidget {
     fn draw(&mut self, area: Rect, buf: &mut Buffer) {
         buf.set_string(area.left(), area.top(), self.line_type, Style::default());
 
@@ -355,7 +343,6 @@ q           : Quit            r        : Go to result
                 Point::new(x as i32, (y + height) as i32),
             );
         }
-
         // render bridge horizontal
         for i in 0..(number_of_blocks - 1) {
             let chunk_i = i as usize * 2 + 1;
@@ -418,13 +405,14 @@ q           : Quit            r        : Go to result
             left_tick = tick;
             current_path_index = next_path_index as usize;
 
-            let mut line = match direction {
-                LineDirection::Down => {
-                    LineWidget::default().border_style(Style::default().fg(Color::Red))
-                }
-                LineDirection::Right | LineDirection::Left => LineWidget::default()
-                    .border_style(Style::default().fg(Color::Red))
-                    .line_type(symbols::line::HORIZONTAL),
+            let mut line = {
+                let border_style = Style::default().fg(Color::Red);
+                let line_type = match direction {
+                    LineDirection::Down => symbols::line::VERTICAL,
+                    LineDirection::Right | LineDirection::Left => symbols::line::HORIZONTAL,
+                };
+
+                LineWidget::new(border_style, line_type)
             };
 
             f.render(&mut line, area);
