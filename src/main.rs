@@ -7,7 +7,6 @@ use tui::{backend::TermionBackend, Terminal};
 fn main() -> Result<(), Box<dyn Error>> {
     let sadari_env = helper::read_args(env::args());
 
-    eprintln!("sadari_env is {:?}", sadari_env);
     // Terminal initialization
     let stdout = io::stdout().into_raw_mode()?;
     // let stdout = MouseTerminal::from(stdout);
@@ -25,24 +24,26 @@ fn main() -> Result<(), Box<dyn Error>> {
     let number_of_max_bridges = sadari_env.number_of_max_bridges;
     let y_coordinate = sadari_env.y_coordinate;
 
-    let mut rng = rand::thread_rng();
     let bridge_hashmap = helper::calc_bridge_hashmap(
         number_of_blocks,
         number_of_max_bridges,
         y_coordinate,
-        &mut rng,
+        &mut rand::thread_rng(),
     );
+    let path_hashmap = {
+        let mut hashmap = HashMap::new();
+
+        for index in 0..number_of_blocks {
+            let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
+            hashmap.insert(index, path);
+        }
+
+        hashmap
+    };
 
     let mut selected_chunk = 0u8;
-    let mut path_hashmap = HashMap::new();
-    for index in 0..number_of_blocks {
-        let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
-        path_hashmap.insert(index, path);
-    }
-
     let mut tick = 0;
     let mut sadari_render_flag = true;
-
     // prevent key event input while doing animation
     let mut rendering_state = RenderingState::Idle;
 

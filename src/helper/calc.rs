@@ -7,6 +7,9 @@ use std::{
 };
 use tui::layout::Rect;
 
+type ChunkIndex = u16;
+type BridgeIndex = u16;
+
 pub fn calc_names_layout(
     number_of_blocks: u8,
     block_width_ratio: u8,
@@ -43,9 +46,9 @@ pub fn calc_names_layout(
 pub fn calc_bridge_indexes(
     rng: &mut ThreadRng,
     number_of_bridge: u8,
-    vec_candidates: Vec<u16>,
-) -> Vec<u16> {
-    let vec: Vec<u16> = vec_candidates
+    vec_candidates: Vec<BridgeIndex>,
+) -> Vec<BridgeIndex> {
+    let vec: Vec<BridgeIndex> = vec_candidates
         .into_iter()
         .choose_multiple(rng, number_of_bridge as usize);
 
@@ -76,8 +79,8 @@ pub fn calc_bridge_hashmap(
     number_of_max_bridges: u8,
     y_coordinate: u16,
     rng: &mut ThreadRng,
-) -> HashMap<u16, Vec<u16>> {
-    let mut bridge_hashmap: HashMap<u16, Vec<u16>> = HashMap::new();
+) -> HashMap<ChunkIndex, Vec<BridgeIndex>> {
+    let mut bridge_hashmap: HashMap<ChunkIndex, Vec<BridgeIndex>> = HashMap::new();
 
     for i in 0..(number_of_blocks - 1) {
         let number_of_bridge: u8 = rng.gen_range(2, number_of_max_bridges);
@@ -112,31 +115,44 @@ pub fn calc_prev_index(index: u8, limit: u8) -> u8 {
     (index + limit - 1) % limit
 }
 
-pub fn calc_bridge_points(index: u8, hashmap: &HashMap<u16, Vec<u16>>) -> Vec<(u16, u8)> {
+pub fn calc_bridge_points(
+    index: u8,
+    bridge_hashmap: &HashMap<ChunkIndex, Vec<BridgeIndex>>,
+) -> Vec<(u16, u8)> {
     // left side
     let vec_1: Option<Vec<(u16, u8)>> = if index == 0 {
         None
     } else {
-        hashmap
+        bridge_hashmap
             .get(&(index as u16 - 1))
             .map(|vec| vec.iter().map(|x| (*x, index - 1)).collect())
     };
 
     // right side
-    let vec_2: Option<Vec<(u16, u8)>> = hashmap
+    let vec_2: Option<Vec<(u16, u8)>> = bridge_hashmap
         .get(&(index as u16))
         .map(|vec| vec.iter().map(|x| (*x, index + 1)).collect());
 
-    let mut vec: Vec<(u16, u8)> = Vec::new();
-    for i in vec![vec_1, vec_2].into_iter().filter_map(|x| x).flatten() {
-        vec.push(i)
-    }
+    let vec: Vec<(u16, u8)> = {
+        let mut vec = Vec::new();
 
-    vec.sort_by_key(|k| k.0);
+        vec![vec_1, vec_2]
+            .into_iter()
+            .filter_map(|x| x)
+            .flatten()
+            .for_each(|x| {
+                vec.push(x);
+            });
+
+        vec.sort_by_key(|k| k.0);
+
+        vec
+    };
 
     vec
 }
 
+// return Point Struct
 pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<(u8, u8)> {
     let mut curr_location = (index, 0u8);
     let mut path = Vec::new();
@@ -174,9 +190,6 @@ pub fn calc_partial_line(
     index: i32,
     selected_chunk: u8,
 ) -> (i32, Rect, LineDirection, i32) {
-    // eprintln!("\n calc_partial_line ---------");
-    // eprintln!("index is {}, tick is {}", index, tick);
-
     let start_point: (u16, i32) = if index == 0 {
         (selected_chunk as u16, -1)
     } else {
@@ -190,22 +203,12 @@ pub fn calc_partial_line(
         (*x as u16, *y as i32)
     };
 
-    // eprintln!(
-    //     "before mapping, start_point is {},{} / end_point is {},{}",
-    //     start_point.0, start_point.1, end_point.0, end_point.1
-    // );
-
     let start_point = point_hashmap
         .get(&Point::new(start_point.0 as i32, start_point.1))
         .unwrap();
     let end_point = point_hashmap
         .get(&Point::new(end_point.0 as i32, end_point.1))
         .unwrap();
-
-    // eprintln!(
-    //     "after maping, start_point is {:?} / end_point is {:?}",
-    //     &start_point, &end_point
-    // );
 
     let tuple = if start_point.x == end_point.x {
         // direction down
@@ -254,6 +257,5 @@ pub fn calc_partial_line(
         (left_tick, area, LineDirection::Left, next_index)
     };
 
-    // eprintln!("calc_partial_line --------- \n");
     tuple
 }
