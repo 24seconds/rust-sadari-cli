@@ -30,16 +30,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         y_coordinate,
         &mut rand::thread_rng(),
     );
-    let path_hashmap = {
-        let mut hashmap = HashMap::new();
 
-        for index in 0..number_of_blocks {
+    let path_hashmap = (0..number_of_blocks)
+        .into_iter()
+        .map(|index| {
             let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
-            hashmap.insert(index, path);
-        }
 
-        hashmap
-    };
+            (index, path)
+        })
+        .collect();
 
     let mut selected_chunk = 0u8;
     let mut tick = 0;
