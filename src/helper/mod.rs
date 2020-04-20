@@ -5,13 +5,7 @@ mod tools;
 
 mod draw;
 
-pub use tools::{
-    // read_args,
-    get_input_from_file,
-    print_hashmap,
-    *,
-};
-
+pub use tools::*;
 pub use calc::*;
 pub use draw::*;
 pub use event::*;
