@@ -466,7 +466,7 @@ where
     }
 }
 
-pub fn print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
+pub fn _print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
 where
     K: Debug + Display,
     V: Debug,
