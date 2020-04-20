@@ -18,14 +18,14 @@ pub struct SadariEnvironment {
     pub number_of_blocks: u8,
     pub number_of_max_bridges: u8,
     pub y_coordinate: u16,
-    pub rng: ThreadRng,
+    rng: ThreadRng,
     pub name_vec: Vec<String>,
     pub result_vec: Vec<String>,
     pub tick_rate: u64,
 }
 
 impl SadariEnvironment {
-    pub fn default() -> SadariEnvironment {
+    fn default() -> SadariEnvironment {
         SadariEnvironment {
             number_of_blocks: 0,
             number_of_max_bridges: 6,
@@ -37,19 +37,19 @@ impl SadariEnvironment {
         }
     }
 
-    pub fn number_of_blocks(mut self, number_of_blocks: u8) -> Self {
+    fn number_of_blocks(mut self, number_of_blocks: u8) -> Self {
         self.number_of_blocks = number_of_blocks;
 
         self
     }
 
-    pub fn name_vec(mut self, name_vec: Vec<String>) -> Self {
+    fn name_vec(mut self, name_vec: Vec<String>) -> Self {
         self.name_vec = name_vec;
 
         self
     }
 
-    pub fn result_vec(mut self, result_vec: Vec<String>) -> Self {
+    fn result_vec(mut self, result_vec: Vec<String>) -> Self {
         self.result_vec = result_vec;
 
         self
@@ -73,14 +73,6 @@ impl Display for SadariEnvironment {
             self.result_vec
         )
     }
-}
-
-struct SadariData {
-    selected_chunk: u8,
-    bridge_hashmap: HashMap<u16, Vec<u16>>,
-    path_hashmap: HashMap<u8, Vec<(u8, u8)>>,
-    tick: i32,
-    tick_speed: i32,
 }
 
 mod interaction {
@@ -118,7 +110,7 @@ mod interaction {
         }
     }
 
-    pub fn idle_guide() {
+    fn idle_guide() {
         println!("\tType list of names separated by comma! ex) name1, name2, name3 ...\n");
         println!("\tQ,q) Quit\n");
         print!("type: ");
@@ -126,7 +118,7 @@ mod interaction {
         io::stdout().flush().unwrap();
     }
 
-    pub fn name_input_guide(v: &Vec<String>) {
+    fn name_input_guide(v: &Vec<String>) {
         println!("\tIs that right? \n\tnames: {:?}, len: {}\n", v, v.len());
         println!("\tY, y) yes");
         println!("\tN, n) no");
@@ -135,7 +127,7 @@ mod interaction {
         io::stdout().flush().unwrap();
     }
 
-    pub fn result_input_guide() {
+    fn result_input_guide() {
         println!("\tType list of results separated by comma! ex) result1, result2, result3 ...");
         println!("\tR, r) If you want auto generated results");
         println!("\tQ,q) Quit\n");
@@ -143,7 +135,7 @@ mod interaction {
         io::stdout().flush().unwrap();
     }
 
-    pub fn before_done_guide(sadari_env: &SadariEnvironment) {
+    fn before_done_guide(sadari_env: &SadariEnvironment) {
         println!(
             "\tIs that right? \n\tname: {:?}, len: {}",
             sadari_env.name_vec,
@@ -284,7 +276,7 @@ mod interaction {
         }
     }
 
-    pub fn validate_input(state: &State, sadari_env: &SadariEnvironment) -> (bool, Option<String>) {
+    fn validate_input(state: &State, sadari_env: &SadariEnvironment) -> (bool, Option<String>) {
         match state {
             State::NameInput => {
                 let len = sadari_env.name_vec.len();
@@ -334,7 +326,7 @@ mod interaction {
     }
 }
 
-pub fn read_args_from_stdin() -> SadariEnvironment {
+fn read_args_from_stdin() -> SadariEnvironment {
     let mut sadari_env = SadariEnvironment::default();
     let mut state = interaction::State::Idle;
 
@@ -362,12 +354,10 @@ pub fn read_args_from_stdin() -> SadariEnvironment {
         }
     }
 
-    println!("stdin, sadari_env is {:?}", &sadari_env);
-
     sadari_env
 }
 
-pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Error> {
+fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Error> {
     let file = File::open(filename)?;
     let reader = std::io::BufReader::new(&file);
 
@@ -390,7 +380,7 @@ pub fn get_input_from_file(filename: &String) -> Result<Vec<Vec<String>>, io::Er
     Ok(vec)
 }
 
-pub fn read_args_from_file(args: Vec<String>) -> SadariEnvironment {
+fn read_args_from_file(args: Vec<String>) -> SadariEnvironment {
     let filename = &args[1];
     let vec_read_file = get_input_from_file(filename).unwrap_or_else(|err| {
         panic!("\n\tget_input_from_file error : {}", err);
@@ -434,9 +424,6 @@ pub fn read_args_from_file(args: Vec<String>) -> SadariEnvironment {
         vec_read_file.get(1).unwrap().clone()
     };
 
-    eprintln!("name_vec is {:?}", name_vec);
-    eprintln!("result_vec is {:?}", result_vec);
-
     if name_vec.len() != result_vec.len() {
         panic!(
             "\n\tname and result length are different name: {}, result: {}",
@@ -466,7 +453,7 @@ where
     }
 }
 
-pub fn _print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
+fn _print_hashmap<K, V>(name: String, hashmap: &HashMap<K, V>)
 where
     K: Debug + Display,
     V: Debug,

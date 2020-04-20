@@ -12,7 +12,7 @@ use tui::{
     Frame, Terminal,
 };
 
-pub fn create_simple_block<'a>(borders: Borders, color: Color) -> Block<'a> {
+fn create_simple_block<'a>(borders: Borders, color: Color) -> Block<'a> {
     Block::default()
         .borders(borders)
         .border_style(Style::default().fg(color))
@@ -31,7 +31,7 @@ pub enum LineDirection {
     Down,
 }
 
-pub enum BorderKind {
+enum BorderKind {
     Selected,
     NotSelected,
 }
@@ -43,15 +43,8 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn default() -> Self {
-        Point { x: 0, y: 0 }
-    }
     pub fn new(x: i32, y: i32) -> Self {
-        let mut point = Point::default();
-        point.x = x;
-        point.y = y;
-
-        point
+        Point { x, y }
     }
 }
 
@@ -62,7 +55,7 @@ impl fmt::Display for Point {
 }
 
 impl BorderKind {
-    pub fn color(self) -> Color {
+    fn color(self) -> Color {
         match self {
             BorderKind::Selected => Color::Red,
             BorderKind::NotSelected => Color::White,
@@ -77,7 +70,7 @@ struct LineWidget {
 }
 
 impl LineWidget {
-    pub fn new(border_style: Style, line_type: &'static str) -> Self {
+    fn new(border_style: Style, line_type: &'static str) -> Self {
         Self {
             border_style,
             line_type,

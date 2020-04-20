@@ -84,10 +84,10 @@ pub fn calc_bridge_hashmap(
 
     for i in 0..(number_of_blocks - 1) {
         let number_of_bridge: u8 = rng.gen_range(2, number_of_max_bridges);
-        let range = 0..y_coordinate;
 
         let vec_candidates = {
             let index = if i == 0 { 0 } else { (i - 1) as u16 };
+            let range = 0..y_coordinate;
 
             match bridge_hashmap.get(&index) {
                 Some(vec) => {
