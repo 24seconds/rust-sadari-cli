@@ -43,7 +43,7 @@ pub fn calc_names_layout(
     Ok(vec)
 }
 
-fn calc_bridge_indexes(
+pub fn calc_bridge_indexes(
     rng: &mut ThreadRng,
     number_of_bridge: u8,
     vec_candidates: Vec<BridgeIndex>,
@@ -115,7 +115,7 @@ pub fn calc_prev_index(index: u8, limit: u8) -> u8 {
     (index + limit - 1) % limit
 }
 
-fn calc_bridge_points(
+pub fn calc_bridge_points(
     index: i32,
     bridge_hashmap: &HashMap<ChunkIndex, Vec<BridgeIndex>>,
 ) -> Vec<Point> {
