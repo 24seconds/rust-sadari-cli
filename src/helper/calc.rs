@@ -43,7 +43,7 @@ pub fn calc_names_layout(
     Ok(vec)
 }
 
-pub fn calc_bridge_indexes(
+fn calc_bridge_indexes(
     rng: &mut ThreadRng,
     number_of_bridge: u8,
     vec_candidates: Vec<BridgeIndex>,
@@ -115,25 +115,29 @@ pub fn calc_prev_index(index: u8, limit: u8) -> u8 {
     (index + limit - 1) % limit
 }
 
-pub fn calc_bridge_points(
-    index: u8,
+fn calc_bridge_points(
+    index: i32,
     bridge_hashmap: &HashMap<ChunkIndex, Vec<BridgeIndex>>,
-) -> Vec<(u16, u8)> {
+) -> Vec<Point> {
     // left side
-    let vec_1: Option<Vec<(u16, u8)>> = if index == 0 {
+    let vec_1: Option<Vec<Point>> = if index == 0 {
         None
     } else {
-        bridge_hashmap
-            .get(&(index as u16 - 1))
-            .map(|vec| vec.iter().map(|x| (*x, index - 1)).collect())
+        bridge_hashmap.get(&(index as u16 - 1)).map(|vec| {
+            vec.iter()
+                .map(|x| Point::new(*x as i32, index - 1))
+                .collect()
+        })
     };
 
     // right side
-    let vec_2: Option<Vec<(u16, u8)>> = bridge_hashmap
-        .get(&(index as u16))
-        .map(|vec| vec.iter().map(|x| (*x, index + 1)).collect());
+    let vec_2: Option<Vec<Point>> = bridge_hashmap.get(&(index as u16)).map(|vec| {
+        vec.iter()
+            .map(|x| Point::new(*x as i32, index + 1))
+            .collect()
+    });
 
-    let vec: Vec<(u16, u8)> = {
+    let vec: Vec<Point> = {
         let mut vec = Vec::new();
 
         vec![vec_1, vec_2]
@@ -144,7 +148,7 @@ pub fn calc_bridge_points(
                 vec.push(x);
             });
 
-        vec.sort_by_key(|k| k.0);
+        vec.sort_by_key(|p| p.x);
 
         vec
     };
@@ -152,30 +156,29 @@ pub fn calc_bridge_points(
     vec
 }
 
-// return Point Struct
-pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<(u8, u8)> {
-    let mut curr_location = (index, 0u8);
+pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<Point> {
+    let mut curr_location = Point::new(index as i32, 0i32);
     let mut path = Vec::new();
 
     loop {
-        let (x, y) = curr_location;
-        if y == y_max {
-            path.push((x, y));
+        let Point { x, y } = curr_location;
+        if y == y_max as i32 {
+            path.push(Point::new(x, y));
             break;
         }
 
         let vec_bridge_points = calc_bridge_points(x, hashmap);
-        let bridge_point = vec_bridge_points.iter().find(|x| x.0 == y as u16);
+        let bridge_point = vec_bridge_points.iter().find(|point| point.x == y as i32);
 
         match bridge_point {
-            Some(v) => {
-                path.push((x, y));
-                path.push((v.1, y));
+            Some(p) => {
+                path.push(Point::new(x, y));
+                path.push(Point::new(p.y, y));
 
-                curr_location = (v.1, y + 1);
+                curr_location = Point::new(p.y, y + 1);
             }
             None => {
-                curr_location = (x, y + 1);
+                curr_location = Point::new(x, y + 1);
             }
         }
     }
@@ -185,7 +188,7 @@ pub fn calc_path(index: u8, hashmap: &HashMap<u16, Vec<u16>>, y_max: u8) -> Vec<
 
 pub fn calc_partial_line(
     point_hashmap: &HashMap<Point, Point>,
-    path: &Vec<(u8, u8)>,
+    path: &Vec<Point>,
     tick: i32,
     index: i32,
     selected_chunk: u8,
@@ -193,12 +196,12 @@ pub fn calc_partial_line(
     let start_point: (u16, i32) = if index == 0 {
         (selected_chunk as u16, -1)
     } else {
-        let (x, y) = path.get(index as usize - 1).unwrap();
+        let Point { x, y } = path.get(index as usize - 1).unwrap();
 
         (*x as u16, *y as i32)
     };
     let end_point = {
-        let (x, y) = path.get(index as usize).unwrap();
+        let Point { x, y } = path.get(index as usize).unwrap();
 
         (*x as u16, *y as i32)
     };

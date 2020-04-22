@@ -200,18 +200,18 @@ fn calc_bridge_points_should_not_overlap() {
         &mut rng,
     );
 
-    for index in 0..number_of_block {
+    for index in 0..number_of_block as i32 {
         let vec = helper::calc_bridge_points(index, &bridge_hashmap);
 
         if index == 0 {
             let count_1 = bridge_hashmap.get(&0).unwrap().len();
-            let count_2 = vec.iter().filter(|x| x.1 == index + 1).count();
+            let count_2 = vec.iter().filter(|p| p.y == index + 1).count();
 
             assert_eq!(count_1, count_2);
             assert_eq!(vec.len(), count_1);
-        } else if index == number_of_block - 1 {
+        } else if index == (number_of_block - 1) as i32 {
             let count_1 = bridge_hashmap.get(&(index as u16 - 1)).unwrap().len();
-            let count_2 = vec.iter().filter(|x| x.1 == index - 1).count();
+            let count_2 = vec.iter().filter(|p| p.y == index - 1).count();
 
             assert_eq!(count_1, count_2);
             assert_eq!(vec.len(), count_1);
@@ -219,8 +219,8 @@ fn calc_bridge_points_should_not_overlap() {
             let count_1 = bridge_hashmap.get(&(index as u16 - 1)).unwrap().len();
             let count_2 = bridge_hashmap.get(&(index as u16)).unwrap().len();
 
-            let count_3 = vec.iter().filter(|x| x.1 == index - 1).count();
-            let count_4 = vec.iter().filter(|x| x.1 == index + 1).count();
+            let count_3 = vec.iter().filter(|p| p.y == index - 1).count();
+            let count_4 = vec.iter().filter(|p| p.y == index + 1).count();
 
             assert_eq!(count_1, count_3);
             assert_eq!(count_2, count_4);
@@ -248,7 +248,7 @@ pub fn calc_path_result_should_not_overlap() {
     for index in 0..number_of_block {
         let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);
 
-        let (last_x, _) = path.get(path.len() - 1).unwrap();
+        let helper::Point { x: last_x, y: _ } = path.get(path.len() - 1).unwrap();
 
         let is_exist = result.contains(last_x);
         assert_eq!(is_exist, false);

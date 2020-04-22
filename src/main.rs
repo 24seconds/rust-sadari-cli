@@ -1,6 +1,6 @@
 mod helper;
-use helper::{calc_next_index, calc_prev_index, Config, Event, Events, RenderingState};
-use std::{env, error::Error, io, time::Duration};
+use helper::{calc_next_index, calc_prev_index, Config, Event, Events, Point, RenderingState};
+use std::{collections::HashMap, env, error::Error, io, time::Duration};
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{backend::TermionBackend, Terminal};
 
@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         &mut rand::thread_rng(),
     );
 
-    let path_hashmap = (0..number_of_blocks)
+    let path_hashmap: HashMap<u8, Vec<Point>> = (0..number_of_blocks)
         .into_iter()
         .map(|index| {
             let path = helper::calc_path(index, &bridge_hashmap, y_coordinate as u8);

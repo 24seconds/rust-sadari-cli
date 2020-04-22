@@ -155,7 +155,7 @@ pub fn render_sadari<B>(
     tick: &mut i32,
     rendering_state: &mut RenderingState,
     bridge_hashmap: &HashMap<u16, Vec<u16>>,
-    path_hashmap: &HashMap<u8, Vec<(u8, u8)>>,
+    path_hashmap: &HashMap<u8, Vec<Point>>,
 ) -> Result<(), Box<dyn Error>>
 where
     B: Backend,
@@ -405,7 +405,10 @@ q           : Quit            r        : Go to result
 
         if current_path_index == path.len() {
             // result chunk border should be red
-            let (result_index, _) = path.last().unwrap();
+            let Point {
+                x: result_index,
+                y: _,
+            } = path.last().unwrap();
 
             let mut block = create_simple_block(Borders::ALL, Color::Red);
             f.render(&mut block, result_chunks[*result_index as usize * 2 + 1]);
@@ -427,7 +430,7 @@ q           : Quit            r        : Go to result
 pub fn render_result<B>(
     terminal: &mut Terminal<B>,
     sadari_env: &SadariEnvironment,
-    path_hashmap: &HashMap<u8, Vec<(u8, u8)>>,
+    path_hashmap: &HashMap<u8, Vec<Point>>,
 ) -> Result<(), Box<dyn Error>>
 where
     B: Backend,
@@ -449,8 +452,8 @@ where
                 let start = path.first().unwrap();
                 let end = path.last().unwrap();
 
-                let start = start.0;
-                let end = end.0;
+                let start = start.x;
+                let end = end.x;
 
                 let start = sadari_env.name_vec.get(start as usize).unwrap();
                 let end = sadari_env.result_vec.get(end as usize).unwrap();
