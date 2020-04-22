@@ -74,7 +74,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Key::Char('r') => {
                     sadari_render_flag = !sadari_render_flag;
                 }
-                val if [Key::Left, Key::Right, Key::Char('h'), Key::Char('l')].contains(&val) => {
+                val if [Key::Left, Key::Right, Key::Char('h'), Key::Char('l')].contains(&val)
+                    && sadari_render_flag =>
+                {
                     match rendering_state {
                         RenderingState::Idle | RenderingState::Done => {
                             rendering_state = RenderingState::Idle;
@@ -96,11 +98,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     };
                 }
                 Key::Char('\u{000A}') | Key::Char('s') => {
-                    rendering_state = RenderingState::Drawing;
+                    if sadari_render_flag {
+                        rendering_state = RenderingState::Drawing;
+                    }
                 }
-                _ => {
-                    eprintln!("key : {:?}", key);
-                }
+                _ => {}
             },
             _ => {}
         }
