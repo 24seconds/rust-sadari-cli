@@ -459,8 +459,12 @@ where
             })
             .collect();
 
+        let mut block = create_simple_block(Borders::ALL, Color::White);
+        f.render(&mut block, chunks[1]);
+
         let main_chunks = Layout::default()
             .direction(Direction::Horizontal)
+            .margin(2)
             .constraints(
                 [
                     Constraint::Percentage(45),
@@ -469,7 +473,7 @@ where
                 ]
                 .as_ref(),
             )
-            .split(chunks[1]);
+            .split(block.inner(chunks[1]));
 
         let mut label = Label::default()
             .text("Sadari Result")
