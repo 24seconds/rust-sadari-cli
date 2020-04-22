@@ -110,6 +110,21 @@ mod interaction {
         }
     }
 
+    pub fn help_guide() {
+        let text = r#"
+        There are TWO modes to run sadari application.
+        1. Using file path as input
+        2. Interacting with user by asking sevearl Questions.
+
+        1 -> For file as input mode example : cargo run ./text.txt
+        2 -> For interaction mode example : cargo run
+
+        Enjoy!
+        "#;
+
+        println!("{}", text);
+    }
+
     fn idle_guide() {
         println!("\tType list of names separated by comma! ex) name1, name2, name3 ...\n");
         println!("\tQ,q) Quit\n");
@@ -444,7 +459,10 @@ where
 {
     let args: Vec<String> = args.collect();
 
-    eprintln!("args is {:?}", args);
+    if args.len() >= 2 && ["help", "--help"].contains(&args[1].as_str()) {
+        interaction::help_guide();
+        process::exit(0);
+    }
 
     if args.len() < 2 {
         read_args_from_stdin()
