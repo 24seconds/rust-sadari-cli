@@ -1,6 +1,6 @@
 mod helper;
 use helper::{calc_next_index, calc_prev_index, Config, Event, Events, Point, RenderingState};
-use std::{collections::HashMap, env, error::Error, io, time::Duration};
+use std::{collections::HashMap, env, error::Error, io, time, time::Duration};
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{backend::TermionBackend, Terminal};
 
@@ -46,6 +46,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     // prevent key event input while doing animation
     let mut rendering_state = RenderingState::Idle;
 
+    let time = time::Instant::now();
+    let mut prev_elapsed = time.elapsed();
+
     loop {
         if !sadari_render_flag {
             // render result pages
@@ -55,11 +58,23 @@ fn main() -> Result<(), Box<dyn Error>> {
                 &mut terminal,
                 &sadari_env,
                 selected_chunk,
-                &mut tick,
+                tick,
                 &mut rendering_state,
                 &bridge_hashmap,
                 &path_hashmap,
             )?;
+
+            match rendering_state {
+                RenderingState::Idle | RenderingState::Done => {}
+                RenderingState::Drawing => {
+                    let curr_elapsed = time.elapsed();
+
+                    if curr_elapsed.as_millis() - prev_elapsed.as_millis() >= 12 {
+                        tick += 1;
+                        prev_elapsed = time.elapsed();
+                    }
+                }
+            };
         }
 
         if rendering_state == RenderingState::Drawing {

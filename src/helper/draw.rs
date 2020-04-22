@@ -152,7 +152,7 @@ pub fn render_sadari<B>(
     terminal: &mut Terminal<B>,
     sadari_env: &SadariEnvironment,
     selected_chunk: u8,
-    tick: &mut i32,
+    tick: i32,
     rendering_state: &mut RenderingState,
     bridge_hashmap: &HashMap<u16, Vec<u16>>,
     path_hashmap: &HashMap<u8, Vec<Point>>,
@@ -165,7 +165,6 @@ where
     let y_coordinate = sadari_env.y_coordinate;
     let name_vec = &sadari_env.name_vec;
     let result_vec = &sadari_env.result_vec;
-    let tic_speed = 1;
 
     terminal.draw(|mut f| {
         let chunks = Layout::default()
@@ -379,7 +378,7 @@ q           : Quit            r        : Go to result
         let path = path_hashmap.get(&selected_chunk).unwrap();
 
         let mut current_path_index = 0;
-        let mut left_tick = *tick;
+        let mut left_tick = tick;
         while left_tick > 0 && current_path_index < path.len() as usize {
             let (tick, area, direction, next_path_index) = helper::calc_partial_line(
                 &bridge_point_hashmap,
@@ -415,13 +414,6 @@ q           : Quit            r        : Go to result
 
             *rendering_state = RenderingState::Done;
         }
-
-        match rendering_state {
-            RenderingState::Idle | RenderingState::Done => {}
-            RenderingState::Drawing => {
-                *tick += tic_speed;
-            }
-        };
     })?;
 
     Ok(())
