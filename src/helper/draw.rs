@@ -135,8 +135,7 @@ impl<'a> Label<'a> {
     }
 }
 
-#[allow(dead_code)]
-pub fn draw_bridge_point<B>(point_hashmap: &HashMap<Point, Point>, f: &mut Frame<B>)
+pub fn _draw_bridge_point<B>(point_hashmap: &HashMap<Point, Point>, f: &mut Frame<B>)
 where
     B: Backend,
 {
@@ -211,13 +210,7 @@ q           : Quit            r        : Go to result
         let footer_chunk = chunks[2];
         let footer_chunk = Layout::default()
             .direction(Direction::Horizontal)
-            .constraints(
-                [
-                    Constraint::Percentage(100),
-                    // Constraint::Percentage(100),
-                ]
-                .as_ref(),
-            )
+            .constraints([Constraint::Percentage(100)].as_ref())
             .horizontal_margin(10)
             .split(footer_chunk);
 
@@ -235,7 +228,7 @@ q           : Quit            r        : Go to result
                 [
                     Constraint::Percentage(10), // guide to user
                     Constraint::Percentage(80), // main render
-                    Constraint::Percentage(10),
+                    Constraint::Percentage(10), // footer
                 ]
                 .as_ref(),
             )
@@ -243,13 +236,14 @@ q           : Quit            r        : Go to result
             .split(chunks[1]);
 
         let name_chunk = main_chunks[0];
-        let vec = helper::calc_names_layout(number_of_blocks, 3, 1).unwrap();
+        let vec_names_layout = helper::calc_names_layout(number_of_blocks, 3, 1).unwrap();
 
         // render name_chunks
         let name_chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(
-                vec.iter()
+                vec_names_layout
+                    .iter()
                     .map(|x| Constraint::Percentage(*x))
                     .collect::<Vec<Constraint>>(),
             )
@@ -278,14 +272,15 @@ q           : Quit            r        : Go to result
         let result_chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(
-                vec.iter()
+                vec_names_layout
+                    .iter()
                     .map(|x| Constraint::Percentage(*x))
                     .collect::<Vec<Constraint>>(),
             )
             .split(result_chunk);
 
-        let mut block = create_simple_block(Borders::ALL, Color::White);
         for i in 0..number_of_blocks {
+            let mut block = create_simple_block(Borders::ALL, Color::White);
             f.render(&mut block, result_chunks[i as usize * 2 + 1]);
 
             // draw result texts
@@ -317,8 +312,8 @@ q           : Quit            r        : Go to result
             })
             .collect();
 
-        let mut line = create_simple_block(Borders::LEFT, Color::LightBlue);
         for i in 0..number_of_blocks {
+            let mut line = create_simple_block(Borders::LEFT, Color::LightBlue);
             f.render(&mut line, bridge_chunks[i as usize * 2 + 1]);
 
             // collect bridge vertical points
@@ -357,9 +352,9 @@ q           : Quit            r        : Go to result
                 )
                 .split(bridge_chunk);
 
-            let mut bridge_horizontal = create_simple_block(Borders::BOTTOM, Color::Yellow);
+            let mut line = create_simple_block(Borders::BOTTOM, Color::Yellow);
             vec_indexes.iter().for_each(|vec_index| {
-                f.render(&mut bridge_horizontal, bridge_chunks[*vec_index as usize]);
+                f.render(&mut line, bridge_chunks[*vec_index as usize]);
 
                 // collect bridge horizontal points
                 let Rect {
@@ -382,7 +377,6 @@ q           : Quit            r        : Go to result
 
         // draw animation
         let path = path_hashmap.get(&selected_chunk).unwrap();
-        // helper::print_hashmap(String::from("bridge_point_hashmap"), &bridge_point_hashmap);
 
         let mut current_path_index = 0;
         let mut left_tick = *tick;
@@ -398,15 +392,13 @@ q           : Quit            r        : Go to result
             left_tick = tick;
             current_path_index = next_path_index as usize;
 
-            let mut line = {
-                let border_style = Style::default().fg(Color::Red);
-                let line_type = match direction {
+            let mut line = LineWidget::new(
+                Style::default().fg(Color::Red),
+                match direction {
                     LineDirection::Down => symbols::line::VERTICAL,
                     LineDirection::Right | LineDirection::Left => symbols::line::HORIZONTAL,
-                };
-
-                LineWidget::new(border_style, line_type)
-            };
+                },
+            );
 
             f.render(&mut line, area);
         }

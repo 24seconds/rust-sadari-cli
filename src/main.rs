@@ -1,6 +1,6 @@
 mod helper;
 use helper::{calc_next_index, calc_prev_index, Config, Event, Events, RenderingState};
-use std::{collections::HashMap, env, error::Error, io, time::Duration};
+use std::{env, error::Error, io, time::Duration};
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::{backend::TermionBackend, Terminal};
 
