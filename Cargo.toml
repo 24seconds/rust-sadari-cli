@@ -1,7 +1,7 @@
 [package]
 name = "rust-sadari-cli"
 version = "0.1.0"
-authors = ["GeunYeong Cheon <24crazyoung@gmail.com>"]
+authors = ["24seconds <24crazyoung@gmail.com>"]
 description = """
 rust-sadari-cli is sadari game (Ghost leg in other words) based on terminal.
 rust-sadari can take file as input or interaction from dynamic user input.
