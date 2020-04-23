@@ -28,6 +28,8 @@ Iron man, Spider man, Thanos, Doctor strange, Captim america, Thor
     Soul,       Time, Space,            Mind,        Reality, Power
 ```
 
+--------------
+
 #### Just Run! rust-sadari will ask several questions to you!
 
 ```
