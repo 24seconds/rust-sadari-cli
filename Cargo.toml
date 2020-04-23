@@ -12,7 +12,7 @@ Ghost leg is lottery game to find random pairs between two sets.
 homepage = "https://github.com/24seconds/rust-sadari-cli"
 repository = "https://github.com/24seconds/rust-sadari-cli"
 readme = "README.md"
-keywords = ["sadari", "ghost leg", "terminal app"]
+keywords = ["sadari", "ghost-leg", "terminal-app"]
 categories = ["command-line-utilities", "games"]
 edition = "2018"
 license = "Beerware"
