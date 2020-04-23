@@ -2,8 +2,20 @@
 name = "rust-sadari-cli"
 version = "0.1.0"
 authors = ["GeunYeong Cheon <24crazyoung@gmail.com>"]
+description = """
+rust-sadari-cli is sadari game (Ghost leg in other words) based on terminal.
+rust-sadari can take file as input or interaction from dynamic user input.
+Wish you good luck!
+
+Ghost leg is lottery game to find random pairs between two sets.
+"""
+homepage = "https://github.com/24seconds/rust-sadari-cli"
+repository = "https://github.com/24seconds/rust-sadari-cli"
+readme = "README.md"
+keywords = ["sadari", "ghost leg", "terminal app"]
+categories = ["command-line-utilities", "games"]
 edition = "2018"
-lisense = "Beerware"
+license = "Beerware"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
