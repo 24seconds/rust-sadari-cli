@@ -5,6 +5,7 @@
 > Generally, it is used to do lottery game to find random pairs of two sets.
 
 ### Demo
+<img src="./assets/rust_sadari_demo.gif">
 
 #### main page
 <img src="./assets/rust_sadari_cli_demo_main.png">
