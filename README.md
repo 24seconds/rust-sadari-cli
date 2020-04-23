@@ -5,14 +5,15 @@
 > Generally, it is used to do lottery game to find random pairs of two sets.
 
 ### Demo
-<img src="./assets/rust_sadari_demo.gif">
+<img src="./assets/rust_sadari_demo.gif" width="800">
 
 #### main page
-<img src="./assets/rust_sadari_cli_demo_main.png">
+<img src="./assets/rust_sadari_cli_demo_main.png" width="600">
 
 #### result page
-<img src="./assets/rust_sadari_cli_demo_result.png">
+<img src="./assets/rust_sadari_cli_demo_result.png" width="600">
 
+-------------
 
 ### 🎴 How to use?
 
