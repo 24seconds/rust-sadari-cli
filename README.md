@@ -1,5 +1,7 @@
 # 🍺 rust-sadari-cli
 
+[![Crates.io](https://img.shields.io/crates/v/rust-sadari-cli.svg)](https://crates.io/crates/rust-sadari-cli)
+
 `rust-sadari-cli` is sadari game (ghost leg in another words) based on terminal. Check more info [here!](https://en.wikipedia.org/wiki/Ghost_Leg)
 
 > Generally, it is used to do lottery game to find random pairs of two sets.
