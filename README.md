@@ -6,6 +6,9 @@
 
 > Generally, it is used to do lottery game to find random pairs of two sets.
 
+Rust-sadari-cli draws most parts using [tui-rs](https://github.com/fdehau/tui-rs). Tui-rs is awesome library for making cli tools. (Rust-sadari-cli is also listed in [tui-rs' Apps using tui section!](https://github.com/fdehau/tui-rs#apps-using-tui))
+
+
 ### Demo
 <img src="./assets/rust_sadari_demo.gif" width="800">
 
@@ -48,7 +51,13 @@ Type list of names separated by comma! ex) name1, name2, name3 ...
 $ type:
 
 ```
+--------------
 
+#### Installation
 
+For rust users
 
+```
+$ cargo install rust-sadari-cli
+```
 
